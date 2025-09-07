@@ -8,8 +8,8 @@ This README explains how to create, load, and update environments using both **C
 
 ### Create and Activate Environment
 ```bash
-conda create -n myenv python=3.11
-conda activate myenv
+conda create -n milestoneII python=3.11
+conda activate milestoneII
 ```
 
 ### Install Dependencies from File
@@ -35,14 +35,14 @@ conda env export > environment.yml
 ### Create and Activate Environment
 **Linux/macOS**
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv milestoneII
+source milestoneII/bin/activate
 ```
 
 **Windows**
 ```bash
-python -m venv venv
-venv\Scripts\activate
+python -m venv milestoneII
+milestoneII\Scripts\activate
 ```
 
 ### Install Dependencies from File
