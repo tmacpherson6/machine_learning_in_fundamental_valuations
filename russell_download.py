@@ -21,6 +21,13 @@ def download_russell_3000_data(output_file: str) -> None:
 
 
 if __name__ == "__main__":
-    output_file = 'Russell_3000.csv'
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('output_file', help = 'Title of output file: Russell_3000.csv')
+    args.parser.parse_args()
+
+    # Set the output file name and export the data
+    output_file = args.output_file
     download_russell_3000_data(output_file)
+    # Screen logging on the completion of the download
     print(f"Data downloaded and saved to {output_file}")
