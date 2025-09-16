@@ -5,6 +5,7 @@ It will download the data from the given URL and update with additional financia
 
 The output will be a csv file that will be used in the next step of the pipeline.
 '''
+
 import pandas as pd
 
 
@@ -31,3 +32,4 @@ if __name__ == "__main__":
     download_russell_3000_data(output_file)
     # Screen logging on the completion of the download
     print(f"Data downloaded and saved to {output_file}")
+    
