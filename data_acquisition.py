@@ -6,6 +6,7 @@ It will load the Russell 3000 data and update with additional financial data.
 The output will be a csv file that will be used in the next step of the pipeline.
 '''
 
+import argparse
 import pandas as pd
 
 
@@ -28,15 +29,14 @@ def download_russell_3000_data(input_file: str, output_file: str) -> None:
 
 
 if __name__ == "__main__":
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', help = 'Title of input file: Russell_3000.csv')
     parser.add_argument('output_file', help = 'Title of output file. ')
-    args.parser.parse_args()
+    args = parser.parse_args()
 
     # Set the output file name and export the data
     input_file = args.input_file
-    download_russell_3000_data(input_file, output_file)
+    download_russell_3000_data(args.input_file, args.output_file)
     # Screen logging on the completion of the download
-    print(f"Data downloaded and saved to {output_file}")
+    print(f"Data downloaded and saved to {args.output_file}")
     
