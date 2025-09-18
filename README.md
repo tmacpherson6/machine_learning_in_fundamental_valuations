@@ -1,6 +1,6 @@
-===================================================
+===========================================================================================
 Corporate Valuation using Quarterly Finanical Data and Machine Learning (Q1_2024 – Q2_2025)
-===================================================
+===========================================================================================
 
 Project Title
 --------------
@@ -47,6 +47,20 @@ We extracted key financial data from yfinance:
 - InterestExpense_XXXXXX - Cost of borrowing money (bonds, bank loans, credit lines) for YEAR and QUARTER  
 - OtherOperatingExpense_XXXXX - Any Other Operating expenses in YEAR and QUARTER
 
+
+==============================================================================================================================================
+Python Files 
+==============================================================================================================================================
+
+
+==============================================================================================================================================
+Notebook Files
+==============================================================================================================================================
+`Tom's_Data_Exploration_Notebook.ipynb`
+- Initial jupyter notebook to explore and clean data used to build the cleaning.py file.
+
+`Feature_Engineering_PartII.ipynb`
+- Calculating Quarter Over Quarter (QoQ) changes in the financial data to capture temporal trends. 
 
 
 
