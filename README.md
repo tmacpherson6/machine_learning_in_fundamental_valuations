@@ -7,8 +7,8 @@ Project Title
 Predicting Earnings and Clustering Performance with Financial and Macroeconomic Data
 (See: `Team10_MilestoneII_Proposal.pdf` For a more comprehensive project outline)
 
-Project Introduction
----------------------
+Project Overview
+----------------
 Our project begins with a .CSV file containing basic stock information for the iShares Russell 3000 ETF which is an exchange traded fund that tracks the investment results of a broad-based index composed of 3000 US equities. The CSV file can be downloaded from the 'ishares' website: https://www.ishares.com/us/products/239714/ishares-russell-3000-etf  
 
 This file is contained in the repository as:
@@ -16,9 +16,10 @@ This file is contained in the repository as:
 
 We have engineered features that allow for a more accurate prediction of the next quarters Earnings-per-share which can be used to value a company and help determine potential mid- to long-term investment opportunities.
 
-Project Overview
+Raw Data
 ----------------
-We extracted key financial data from yfinance:  
+We extracted key financial data from yfinance: 
+
 - Ticker: Company Stock Symbol  
 - Name: Company Name  
 - Sector: Sector Company Belongs to  
@@ -47,6 +48,17 @@ We extracted key financial data from yfinance:
 - InterestExpense_XXXXXX - Cost of borrowing money (bonds, bank loans, credit lines) for YEAR and QUARTER  
 - OtherOperatingExpense_XXXXX - Any Other Operating expenses in YEAR and QUARTER
 
+Feature Engineering
+----------------
+- <RawFeature>_QoQ_YYQQ_YYQQ - We took the quarter over quarter change in all financial features in order to capture some temporal structure. The feature column is in the format of the rawfeaturename_QoQ_YearQuarter_YearQuarter where it is the change between the two quarters named.  
+- <RawFeature>_QoQ_Rate - We took the slope of the OLS linear regression of the quarterly rate change datapoints to get a rate change over all of the historical quarters that we have.  
+- KPI_GrossProfitMargin - (Revenue - Cost of Sales) / Revenue
+- KPI_NetProfitMargin - Net Profit / Revenue
+- KPI_Leverage - Total Assets / Total Equity
+- KPI_DebtToEquityRatio - Total Debt / Total Equity  
+- KPI_TotalAssetTurnover - Revenue / Average Total Assets
+- KPI_ReturnOnEquity - Net Profit / Average Equity
+- KPI_ReturnOnAssets - Net Profit / Average Total Assets
 
 ==================================== 
 Python Files 
