@@ -72,7 +72,7 @@ Notebook Files
 - Initial jupyter notebook to explore and clean data used to build the cleaning.py file.
 
 `Feature_Engineering_PartII.ipynb`
-- Calculating Quarter Over Quarter (QoQ) changes in the financial data to capture temporal trends. 
+- Calculating Quarter Over Quarter (QoQ) changes and rate changes in the financial data to capture temporal trends. 
 
 
 
