@@ -1,5 +1,5 @@
 ====================================  
-Corporate Valuation using Quarterly Finanical Data and Machine Learning (Q1_2024 – Q2_2025)
+Corporate Valuation using Quarterly Finanical Data and Machine Learning (Q2_2024 – Q2_2025)
 ====================================
 
 Project Title
