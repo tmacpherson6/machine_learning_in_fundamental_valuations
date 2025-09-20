@@ -80,7 +80,7 @@ Notebook Files
 *Additional project documentation will be added as files are created.
 
 ==================================== 
-Virtual Environment and Dependency Setup
+Virtual Environment, Makefile and Dependency Setup
 ==================================== 
 
 This section explains how to create, load, and update environments using both **Conda** and **pip**. 
