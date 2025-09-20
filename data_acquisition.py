@@ -4,10 +4,11 @@ This is going to be the first file in the pipeline for our dataset creation and 
 It will load the Russell 3000 data and update with additional financial data.
 
 The output will be a csv file that will be used in the next step of the pipeline.
+
+'yfinance' has been acting up recently, in IDE's however this python script runs perfectly fine in google colab.
 '''
 
 import argparse
-import numpy as np
 import pandas as pd
 import yfinance as yf
 import time
@@ -191,6 +192,13 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
 
     return {"OriginalTicker": orig_ticker, "YahooSymbol": ytk}
 
+def save_to_csv(df, output_file):
+    """
+    Save the DataFrame to a CSV file.
+    """
+    df.to_csv(output_file, index=False)
+    
+
 
 
 
@@ -233,12 +241,23 @@ if __name__ == "__main__":
     ALLOWED_QUARTERS = set(ORDERED_QUARTERS)
 
     orig_tickers = build_ticker_mapping(df)
-    print(f"Found {len(orig_tickers)} unique tickers to process from your original CSV file.")
+    print(f"\nFound {len(orig_tickers)} unique tickers to process from your original CSV file.\n")
     
     metrics = fetch_metrcis(orig_tickers, max_workers=8)
-    print(f"Fetched financial metrics for {len(metrics)} tickers.")
+    print(f"Fetched financial metrics for {len(metrics)} tickers.\n")
 
+    # Merge the dataframes on 'Ticker' and 'OriginalTicker'
+    merged_df = pd.merge(df, metrics, left_on='Ticker', right_on='OriginalTicker', how='left')
+    print(f"Merged data contains {merged_df.shape[0]} rows and {merged_df.shape[1]} columns.\n")
+
+    # Optional: move identification columns to the front
+    id_cols = [c for c in ["Ticker","Name","Sector","OriginalTicker","YahooSymbol", "Weight (%)"] if c in merged_df.columns]
+    metric_cols = [c for c in merged_df.columns if c not in id_cols]
+    merged_df = merged_df[id_cols + sorted(metric_cols)]
     
-    # Screen logging on the completion of the download
-    #print(f"Data downloaded and saved to {args.output_file}")
-    
+    print("Target quarters (most recent first):", ORDERED_QUARTERS)
+    print(merged_df.head())
+
+    save_to_csv(merged_df, args.output_file)
+    print(f"Data downloaded and saved to {args.output_file}\n")
+
