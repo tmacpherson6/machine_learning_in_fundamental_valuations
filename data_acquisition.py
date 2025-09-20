@@ -10,22 +10,33 @@ import argparse
 import pandas as pd
 
 
-def download_russell_3000_data(input_file: str, output_file: str) -> None:
+def download_stock_data(input_file: str, output_file: str) -> None:
     """
-    Downloads the Russell 3000 ETF data from the Repo, updates the data, and saves it as a new checkpoint CSV file.
+    Downloads the Base Stock CSV data from the Repoository. In this project
+    we use the Russell 3000 ETF as our base stock data. The data 
+    is downloaded from:
+    https://www.ishares.com/us/products/239714/ishares-russell-3000-etf
+
+    The base data should contain:  
+    - Ticker  
+    - Company Name  
+    - Sector  
+    - Asset Class  
+    - Market Value (Market Cap, quantitative)  
+    - Weight (%) in the ETF  
+    - Notional Value (Equal to Market Value)  
+    - Quantity (Number of Outstanding Shares)
+    - Price (Current Price per Share at time of download)
+    - Location (Headquarters)
+    - Exchange (Primary Exchange)
+    - Currency (Trading Currency)
 
     Parameters:
-    input_file (str): The original Russell 3000 CSV file path.
-    output_file (str): The path to save the downloaded CSV file.
+    input_file (str): The original Stock CSV file path.
     """
     # Load the Russell 3000 data from the provided CSV file
     df = pd.read_csv(input_file)
-    
-    # Perform any necessary data updates here
-    
-    
-    # Save the updated DataFrame to a new CSV file
-    #df.to_csv(output_file, index=False)
+
     return df
 
 if __name__ == "__main__":
@@ -36,7 +47,7 @@ if __name__ == "__main__":
 
     # Set the output file name and export the data
     input_file = args.input_file
-    df = download_russell_3000_data(args.input_file, args.output_file)
+    df = download_stock_data(args.input_file, args.output_file)
     print(df.head())
 
 
