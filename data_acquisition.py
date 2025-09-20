@@ -225,6 +225,9 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
             stdebt = _get_series(bal, ST_DEBT)
             ltdebt = _get_series(bal, LT_DEBT)
             equity = _get_series(bal, EQUITY)
+            curr_li = _get_series(bal, CURRENT_LIAB)
+            curr_as = _get_series(bal, CURRENT_ASSETS)
+            tot_debt = _get_series(bal, TOTAL_DEBT)
 
             # Primary pulls (robust)
             cor      = _get_series_caseflex(inc, COR,       keywords=["cost","revenue","sales","cogs"])
@@ -268,6 +271,9 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
                 (stdebt,"ShortTermDebtOrCurrentLiab"),
                 (ltdebt,"LongTermDebt"),
                 (equity,"TotalEquity"),
+                (curr_li, "CurrentLiabilities"),
+                (curr_as, "CurrentAssets"),
+                (tot_debt, "TotalDebt"),
             ]:
                 if series is None or series.empty:
                     continue
@@ -280,6 +286,7 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
                         except Exception:
                             # if conversion fails, skip this value gracefully
                             continue
+            
             _filter_and_add(row, cor,      "CostOfRevenue")
             _filter_and_add(row, int_exp,  "InterestExpense")
             _filter_and_add(row, tax_exp,  "IncomeTaxExpense")   # may be derived
@@ -389,6 +396,37 @@ if __name__ == "__main__":
         "Net Income Applicable To Common Shares","NetIncomeApplicableToCommonShares"
     ]
 
+    # ---------------- Candidate labels (Balance Sheet only) ----------------
+    CURRENT_LIAB = [
+        "Total Current Liabilities","TotalCurrentLiabilities",
+        "Current Liabilities","CurrentLiabilities", "current liabilities","Current liabilities","Current debt","Current Debt","Deposits"
+    ]
+    
+    
+    CURRENT_ASSETS = [
+        "Total Current Assets","TotalCurrentAssets",
+        "Current Assets","CurrentAssets", "current assets","Current assets","Trading Securities","Trading Assets","Trading securities","Trading assets"
+    ]
+
+    CURRENT_LIAB = [
+    "Total Current Liabilities","TotalCurrentLiabilities",
+    "Current Liabilities","CurrentLiabilities","current liabilities",
+    "Current liabilities","Current debt","Current Debt","Deposits"
+]
+
+    CURRENT_ASSETS = [
+        "Total Current Assets","TotalCurrentAssets",
+        "Current Assets","CurrentAssets","current assets",
+        "Current assets","Trading Securities","Trading Assets",
+        "Trading securities","Trading assets"
+    ]
+    
+    TOTAL_DEBT = [
+        "Total Debt","TotalDebt",
+        "Short Long Term Debt","Short Long Term Debt Total","Short/Long Term Debt",
+        "Long Term Debt","LongTermDebt","Long-term debt","Long Term Debt Noncurrent",
+    ]
+
     # Build allowed quarter labels (exclude current quarter)
     ORDERED_QUARTERS = _last_n_completed_quarters(n=5)  # e.g., ['2025Q2','2025Q1','2024Q4','2024Q3','2024Q2']
     ALLOWED_QUARTERS = set(ORDERED_QUARTERS)
@@ -411,6 +449,5 @@ if __name__ == "__main__":
     print("Target quarters (most recent first):", ORDERED_QUARTERS)
     print(merged_df.head())
 
-    #save_to_csv(merged_df, args.output_file)
+    save_to_csv(merged_df, args.output_file)
     print(f"Data downloaded and saved to {args.output_file}\n")
-
