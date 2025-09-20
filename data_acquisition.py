@@ -9,9 +9,12 @@ The output will be a csv file that will be used in the next step of the pipeline
 '''
 
 import argparse
+import time
+import re
+
 import pandas as pd
 import yfinance as yf
-import time
+
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -84,6 +87,12 @@ def _label_quarter(ts):
     q = (ts.month - 1)//3 + 1
     return f"{ts.year}Q{q}"
 
+
+def _norm(s: str) -> str:
+    """Lowercase, remove non-alnum; robust to spaces/punctuation/casing."""
+    _norm_re = re.compile(r"[^a-z0-9]+")
+    return _norm_re.sub("", str(s).lower())
+
 def _last_completed_quarter(as_of=None):
     """
     Return (year, quarter) for the most recently COMPLETED quarter relative to as_of.
@@ -132,6 +141,63 @@ def _get_series(df, candidates, max_quarters=8):
         pass
     return s.sort_index().tail(max_quarters)
 
+def _get_series_caseflex(df, candidates, keywords=None, max_quarters=8):
+    """
+    Robust row resolver:
+      1) exact match
+      2) case/space/punct-insensitive match
+      3) fuzzy 'contains' search using keywords (if provided)
+    Returns Series indexed by period-end (datetime), sorted asc.
+    """
+    if df is None or not hasattr(df, "index") or df.empty:
+        return pd.Series(dtype=float)
+
+    # 1) exact
+    for r in candidates:
+        if r in df.index:
+            s = df.loc[r].dropna()
+            try: s.index = pd.to_datetime(s.index)
+            except: pass
+            return s.sort_index().tail(max_quarters)
+
+    # 2) normalized exact
+    norm_to_real = { _norm(idx): idx for idx in df.index }
+    for r in candidates:
+        nr = _norm(r)
+        if nr in norm_to_real:
+            s = df.loc[norm_to_real[nr]].dropna()
+            try: s.index = pd.to_datetime(s.index)
+            except: pass
+            return s.sort_index().tail(max_quarters)
+
+    # 3) fuzzy contains by keywords
+    if keywords:
+        hits = []
+        lower_idx = [(idx, idx.lower()) for idx in df.index]
+        for idx, low in lower_idx:
+            if any(k.lower() in low for k in keywords):
+                hits.append(idx)
+        if hits:
+            # prefer the first stable-looking hit (shortest name as a heuristic)
+            hits.sort(key=lambda x: len(x))
+            s = df.loc[hits[0]].dropna()
+            try: s.index = pd.to_datetime(s.index)
+            except: pass
+            return s.sort_index().tail(max_quarters)
+
+    return pd.Series(dtype=float)
+
+def _filter_and_add(row, series, metric):
+    if series is None or series.empty:
+        return
+    for dt, val in series.items():
+        q = _label_quarter(dt)
+        if q in ALLOWED_QUARTERS:
+            try:
+                row[f"{metric}_{q}"] = float(val)
+            except Exception:
+                pass
+
 def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
     """
     Pull metrics only for the last 5 COMPLETED quarters (exclude the current quarter).
@@ -160,6 +226,34 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
             ltdebt = _get_series(bal, LT_DEBT)
             equity = _get_series(bal, EQUITY)
 
+            # Primary pulls (robust)
+            cor      = _get_series_caseflex(inc, COR,       keywords=["cost","revenue","sales","cogs"])
+            int_exp  = _get_series_caseflex(inc, INT_EXP,   keywords=["interest","debt"])
+            tax_exp  = _get_series_caseflex(inc, TAX_EXP,   keywords=["tax","provision"])
+            opex_oth = _get_series_caseflex(inc, OPEX_OTHER,keywords=["operating","expense"])
+            capex    = _get_series_caseflex(cf,  CAPEX,     keywords=["capital","property","equipment","purchases","ppe"])
+
+            # Fallbacks:
+            # - Interest expense: sometimes found in cashflow descriptions
+            if (int_exp is None) or int_exp.empty:
+                int_exp = _get_series_caseflex(cf, INT_EXP, keywords=["interest"])
+
+            # - CapEx: try broader keywords if still empty
+            if (capex is None) or capex.empty:
+                capex = _get_series_caseflex(cf, CAPEX, keywords=["capital","purchases","property","plant","equipment"])
+
+            # - TAX derived fallback: Pretax - NetIncome (approx. provision for income taxes)
+            if (tax_exp is None) or tax_exp.empty:
+                pretax = _get_series_caseflex(inc, PRETAX, keywords=["before tax","pretax","earnings before tax"])
+                net    = _get_series_caseflex(inc, NET_INCOME, keywords=["net income"])
+                if pretax is not None and not pretax.empty and net is not None and not net.empty:
+                    # Align and derive
+                    df_tax = (pretax - net).dropna()
+                    try: df_tax.index = pd.to_datetime(df_tax.index)
+                    except: pass
+                    df_tax = df_tax.sort_index()
+                    tax_exp = df_tax.tail(8)
+
             row = {"OriginalTicker": orig_ticker, "YahooSymbol": ytk}
 
             for series, metric in [
@@ -186,6 +280,12 @@ def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
                         except Exception:
                             # if conversion fails, skip this value gracefully
                             continue
+            _filter_and_add(row, cor,      "CostOfRevenue")
+            _filter_and_add(row, int_exp,  "InterestExpense")
+            _filter_and_add(row, tax_exp,  "IncomeTaxExpense")   # may be derived
+            _filter_and_add(row, opex_oth, "OtherOperatingExpense")
+            _filter_and_add(row, capex,    "CapitalExpenditure")
+            
             return row
         except Exception:
             time.sleep(pause)
@@ -235,7 +335,60 @@ if __name__ == "__main__":
             "Long Term Debt And Capital Lease Obligation"]
     EQUITY = ["Total Stockholder Equity","TotalStockholderEquity","StockholdersEquity",
             "Total Equity Gross Minority Interest","TotalEquityGrossMinorityInterest"]
+        # Cost of revenue / cost of sales
+    COR = [
+        "Cost Of Revenue","CostOfRevenue","Cost of Goods Sold","CostOfGoodsSold",
+        "Cost Of Goods And Services Sold","CostOfGoodsAndServicesSold",
+        "Cost Of Sales","CostOfSales","Cost of Sales","Cost of Revenue"
+    ]
     
+    # Total interest expense
+    INT_EXP = [
+        "Interest Expense","InterestExpense","Interest Expense Non Operating","InterestExpenseNonOperating",
+        "Total Interest Expense","TotalInterestExpense",
+        # extra variants seen in the wild
+        "Interest And Debt Expense","InterestAndDebtExpense",
+        "Interest And Debt Expense Non Operating","InterestAndDebtExpenseNonOperating",
+        "Interest Expense Net","InterestExpenseNet"
+    ]
+    
+    # Income tax expense / provision (expanded)
+    TAX_EXP = [
+        "Income Tax Expense","IncomeTaxExpense","Provision For Income Taxes","ProvisionForIncomeTaxes",
+        "Provision for income taxes","Income Taxes","IncomeTaxes",
+        "Income Tax (Benefit) Expense","IncomeTaxExpenseBenefit",
+        "Income Tax Provision","IncomeTaxProvision","Provision For Income Tax","ProvisionForIncomeTax",
+        "Provision For Income Tax (Benefit)","ProvisionForIncomeTaxBenefit"
+    ]
+    
+    # Other / total operating expenses (Yahoo sometimes uses these for the roll-up)
+    OPEX_OTHER = [
+        "Operating Expense","OperatingExpense","Operating Expenses","OperatingExpenses",
+        "Other Operating Expenses","OtherOperatingExpenses",
+        # some tickers expose "Total Operating Expenses"
+        "Total Operating Expenses","TotalOperatingExpenses"
+    ]
+    
+    # Capital expenditures (typically reported in cash flow and often negative)
+    CAPEX = [
+        "Capital Expenditure","CapitalExpenditure","Capital Expenditures","CapitalExpenditures",
+        # common cash-flow variants
+        "Purchase Of Property And Equipment","PurchaseOfPropertyAndEquipment",
+        "Investments In Property Plant And Equipment","InvestmentsInPropertyPlantAndEquipment",
+        "Purchase Of Fixed Assets","PurchaseOfFixedAssets",
+        "Additions To Property Plant And Equipment","AdditionsToPropertyPlantAndEquipment"
+    ]
+    
+    # ---- For derived tax (fallback): we won't output these, only use them if needed ----
+    PRETAX = [
+        "Pretax Income","PretaxIncome","Income Before Tax","IncomeBeforeTax",
+        "Earnings Before Tax","EarningsBeforeTax","Income Loss Before Income Taxes","IncomeLossBeforeIncomeTaxes"
+    ]
+    NET_INCOME = [
+        "Net Income","NetIncome","Net Income Common Stockholders","NetIncomeCommonStockholders",
+        "Net Income Applicable To Common Shares","NetIncomeApplicableToCommonShares"
+    ]
+
     # Build allowed quarter labels (exclude current quarter)
     ORDERED_QUARTERS = _last_n_completed_quarters(n=5)  # e.g., ['2025Q2','2025Q1','2024Q4','2024Q3','2024Q2']
     ALLOWED_QUARTERS = set(ORDERED_QUARTERS)
@@ -258,6 +411,6 @@ if __name__ == "__main__":
     print("Target quarters (most recent first):", ORDERED_QUARTERS)
     print(merged_df.head())
 
-    save_to_csv(merged_df, args.output_file)
+    #save_to_csv(merged_df, args.output_file)
     print(f"Data downloaded and saved to {args.output_file}\n")
 
