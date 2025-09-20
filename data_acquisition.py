@@ -7,7 +7,10 @@ The output will be a csv file that will be used in the next step of the pipeline
 '''
 
 import argparse
+import numpy as np
 import pandas as pd
+import yfinance as yf
+
 
 
 def download_stock_data(input_file: str, output_file: str) -> None:
@@ -48,7 +51,7 @@ if __name__ == "__main__":
     # Set the output file name and export the data
     input_file = args.input_file
     df = download_stock_data(args.input_file, args.output_file)
-    print(df.head())
+    print(df.shape)
 
 
     # Screen logging on the completion of the download
