@@ -144,6 +144,15 @@ If you add or remove packages and need to update the `requirements.txt` file:
 pip freeze > requirements.txt
 ```
 
+### Install WSL (Linux Tools on Windows) for Makefile to work properly
+```bash
+wsl --install -d Ubuntu
+# reopen IDE in WSL then:  
+sudo apt update
+sudo apt install make
+sudo apt install -y python3-venv python3-pip
+make --version
+```
 ---
 
 ## Notes
