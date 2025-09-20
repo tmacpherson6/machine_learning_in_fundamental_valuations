@@ -26,7 +26,7 @@ def download_russell_3000_data(input_file: str, output_file: str) -> None:
     
     # Save the updated DataFrame to a new CSV file
     #df.to_csv(output_file, index=False)
-
+    return df
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -36,7 +36,10 @@ if __name__ == "__main__":
 
     # Set the output file name and export the data
     input_file = args.input_file
-    download_russell_3000_data(args.input_file, args.output_file)
+    df = download_russell_3000_data(args.input_file, args.output_file)
+    print(df.head())
+
+
     # Screen logging on the completion of the download
-    print(f"Data downloaded and saved to {args.output_file}")
+    #print(f"Data downloaded and saved to {args.output_file}")
     

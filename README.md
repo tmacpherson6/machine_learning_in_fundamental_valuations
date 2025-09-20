@@ -95,7 +95,7 @@ conda create -n milestoneII python=3.11
 conda activate milestoneII
 ```
 
-### Install Dependencies from File
+### Install Environment and Dependencies from File (PREFERED)
 ```bash
 conda env create -f environment.yml
 ```
