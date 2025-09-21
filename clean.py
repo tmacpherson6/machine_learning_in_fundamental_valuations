@@ -1,4 +1,3 @@
-#123456789012345678901234567890123456789012345678901234567890123456789012345678
 """Clean company financial and macro data.
 
 Command Line usage (example for Linux):
@@ -12,20 +11,20 @@ import argparse
 import pandas as pd
 
 
-def clean(df: pd.DataFrame) -> pd.DataFrame:
+def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe.
     
     This function is not very modular.  It uses column names that are
     specific to the Russell_3000.csv data file. 
     """
-    dataset = df.copy()
+    dataset = input_df.copy()
     # Drop duplicates
     dataset.drop_duplicates(inplace=True)
     # Drop where ticker is duplicated
     duplicates = dataset.loc[(
         dataset.duplicated('Ticker', keep=False)
     )].sort_values('Ticker')
-    dataset.drop(index=list(duplicates.index), inplace=True)    
+    dataset.drop(index=list(duplicates.index), inplace=True)
     # Keep only one Ticker column
     dataset.drop(columns=['OriginalTicker', 'YahooSymbol'], inplace=True)
     # Keep only entries that are classified as Equity
