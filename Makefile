@@ -1,3 +1,5 @@
+# See README file on how to use this Makefile
+
 VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
