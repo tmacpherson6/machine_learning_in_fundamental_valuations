@@ -5,7 +5,7 @@ It will load the Russell 3000 data and update with additional financial data.
 
 The output will be a csv file that will be used in the next step of the pipeline.
 
-'yfinance' has been acting up recently, in IDE's however this python script runs perfectly fine in google colab.
+'yfinance' has been acting up recently, in IDE's however this python script runs perfectly fine in google colab if necessary.
 '''
 
 import argparse
