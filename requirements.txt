@@ -32,3 +32,4 @@ torch
 protobuf>=5  
 yfinance    
 tqdm
+fredapi

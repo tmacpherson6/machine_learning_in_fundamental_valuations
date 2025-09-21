@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 
-def download_stock_data(input_file: str, output_file: str) -> None:
+def upload_file(input_file: str) -> None:
     """
     Downloads the Base Stock CSV data from the Repoository. In this project
     we use the Russell 3000 ETF as our base stock data. The data 
@@ -306,9 +306,6 @@ def save_to_csv(df, output_file):
     df.to_csv(output_file, index=False)
     
 
-
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', help = 'Title of input file: Russell_3000.csv')
@@ -317,7 +314,7 @@ if __name__ == "__main__":
 
     # Set the output file name and export the data
     input_file = args.input_file
-    df = download_stock_data(args.input_file, args.output_file)
+    df = upload_file(args.input_file)
 
     # Optional: symbol mapping if your tickers differ from Yahoo (leave empty if not needed)
     yahoo_map = {}  # e.g., {'BRK.B': 'BRK-B'}

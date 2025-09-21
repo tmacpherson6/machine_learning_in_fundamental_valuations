@@ -1,13 +1,17 @@
 VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
+PIP    := $(VENV)/bin/pip
 
 .PHONY: all venv
-all: datasets/Russell_3000_Fundamentals.csv
+all: datasets/Russell_3000_With_Macro.csv
+macro: datasets/Russell_3000_With_Macro.csv
 
 # Create virtual environment and install dependencies
 venv: $(PYTHON)
 $(PYTHON):
 	python3 -m venv $(VENV)
+	"$(PYTHON)" -m ensurepip --upgrade
+	"$(PIP)" install -U pip
 
 $(VENV)/.deps: requirements.txt | $(PYTHON)
 	"$(PYTHON)" -m pip install -U pip
@@ -17,6 +21,14 @@ $(VENV)/.deps: requirements.txt | $(PYTHON)
 # Generate the dataset with fundamentals from the Base Stock Dataset
 datasets/Russell_3000_Fundamentals.csv: datasets/Russell_3000.csv data_acquisition.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition.py $< $@
+
+# Add Macroeconomic data to the dataset
+datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv data_acquisition_macro.py | datasets $(VENV)/.deps
+	"$(PYTHON)" data_acquisition_macro.py $< $@
+
+# Clean the generated datset
+#dataset/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv data_cleaning.py | datasets $(VENV)/.deps
+#	"$(PYTHON)" data_cleaning.py $< $@
 
 # If the datasets directory does not exist, create it
 datasets:
