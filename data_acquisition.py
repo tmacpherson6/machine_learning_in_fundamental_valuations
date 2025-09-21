@@ -198,7 +198,7 @@ def _filter_and_add(row, series, metric):
             except Exception:
                 pass
 
-def fetch_last_completed_quarters(orig_ticker, retries=2, pause=0.3):
+def fetch_last_completed_quarters(orig_ticker, retries=6, pause=1.0):
     """
     Pull metrics only for the last 5 COMPLETED quarters (exclude the current quarter).
     Includes Income/CF metrics and Balance Sheet metrics.
