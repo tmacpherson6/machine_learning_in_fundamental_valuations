@@ -32,9 +32,9 @@ datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv dat
 # Still Need to Create These
 #----------------------------------------------------------------------------
 
-# Clean the generated datset
-#dataset/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv data_cleaning.py | datasets $(VENV)/.deps
-#	"$(PYTHON)" data_cleaning.py $< $@
+# Clean the generated dataset
+dataset/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
+	"$(PYTHON)" clean.py $< $@
 
 # Feature engineering on the cleaned dataset
 #datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Cleaned.csv feature_engineering.py | datasets $(VENV)/.deps
