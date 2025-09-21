@@ -1,5 +1,5 @@
 '''
-Add Macroeconomic data to the dataset
+Get Macroeconomic data from the St. Louis Fed (FRED API). Then merge macroeconomic data to the dataset.
 '''
 
 import argparse
