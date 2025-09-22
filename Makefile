@@ -4,7 +4,7 @@ VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-.PHONY: all venv macro
+.PHONY: all venv 
 all: datasets/Russell_3000_With_Macro.csv
 macro: datasets/Russell_3000_With_Macro.csv
 
