@@ -4,7 +4,7 @@ VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-.PHONY: all venv
+.PHONY: all venv macro
 all: datasets/Russell_3000_With_Macro.csv
 macro: datasets/Russell_3000_With_Macro.csv
 
@@ -28,13 +28,13 @@ datasets/Russell_3000_Fundamentals.csv: datasets/Russell_3000.csv data_acquisiti
 datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv data_acquisition_macro.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition_macro.py $< $@
 
+# Clean the generated dataset
+datasets/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
+	"$(PYTHON)" clean.py $< $@
+
 #----------------------------------------------------------------------------
 # Still Need to Create These
 #----------------------------------------------------------------------------
-
-# Clean the generated dataset
-dataset/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
-	"$(PYTHON)" clean.py $< $@
 
 # Feature engineering on the cleaned dataset
 #datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Cleaned.csv feature_engineering.py | datasets $(VENV)/.deps
