@@ -53,4 +53,4 @@ if __name__ == '__main__':
     cleaned_df = clean(df)
     cleaned_df.to_csv(args.output_file, index=False)
     print(f"Cleaned file saved to {args.output_file}")
-    
+
