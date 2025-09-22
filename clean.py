@@ -2,9 +2,9 @@
 
 Command Line usage (example for Linux):
  python clean.py <in_file.csv> <out_file.csv>
-Notes:
+Arguments:
  <in_file.csv> -- the CSV file to be cleaned by this module
- <out_file.csv. -- the cleaned CSV file to write to disk
+ <out_file.csv> -- the cleaned CSV file to write to disk
 """
 import argparse
 
@@ -15,7 +15,7 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe.
     
     This function is not very modular.  It uses column names that are
-    specific to the Russell_3000.csv data file. 
+    specific to the Russell_3000 data. 
     """
     dataset = input_df.copy()
     # Drop duplicates
@@ -35,6 +35,10 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     # Keep only companies in NASDAQ and NYSE
     exchanges_to_keep = ['NASDAQ', 'New York Stock Exchange Inc.']
     dataset = dataset[dataset['Exchange'].isin(exchanges_to_keep)].copy()
+    # Drop 'ShortTermDebtOrCurrentLiab': 40% missing values
+    quarters = ['_2024Q2', '_2024Q3', '_2024Q4', '_2025Q1', '_2025Q2']
+    columns_to_drop = ['ShortTermDebtOrCurrentLiab' + quarter for quarter in quarters]
+    dataset.drop(columns=columns_to_drop, inplace=True)
     return dataset
 
 
