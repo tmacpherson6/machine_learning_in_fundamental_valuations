@@ -41,7 +41,23 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     dataset.drop(columns=columns_to_drop, inplace=True)
     return dataset
 
-
+def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
+    """Adds market cap categories to the dataframe."""
+    caps = (dataset['Market Value']
+        .astype(str)
+        .str.replace(r'[^0-9.\-eE]', '', regex=True))
+    caps = pd.to_numeric(caps, errors='coerce')
+    print(caps)
+    
+    # Create the market cap bins. Looks like the market value is in thousands of dollars so we need to actually adjust our bins down by 1000
+    bins = np.array([0, 50e6, 250e6, 2e9, 10e9, 200e9, np.inf]) / 1e3
+    # Create the labels for the market caps
+    labels = ['Nano-Cap','Micro-Cap','Small-Cap','Mid-Cap','Large-Cap','Mega-Cap']
+    
+    # Apply to the dataset
+    dataset['Market Cap'] = pd.cut(caps, bins=bins, labels=labels, right=False, include_lowest=True)
+    return dataset
+    
 if __name__ == '__main__':
     # Get command line arguments
     parser = argparse.ArgumentParser()
@@ -55,6 +71,8 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     cleaned_df = clean(df)
+    cleaned_df = market_cap_categories(cleaned_df)
+    print("Added Market Cap Categories to DataFrame")
     cleaned_df.to_csv(args.output_file, index=False)
     print(f"Cleaned file saved to {args.output_file}")
 
