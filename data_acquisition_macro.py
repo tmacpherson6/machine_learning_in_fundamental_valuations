@@ -17,10 +17,10 @@ def get_macro_data(api_key: str) -> pd.DataFrame:
     fred = Fred(api_key = fred_api_key)
     GDP = fred.get_series("GDP")[-6:]
     GDPReal = fred.get_series("GDPC1")[-6:]
-    Unemployment = fred.get_series("UNRATE").resample("QS").mean()[-6:]
-    InterestRate = fred.get_series("FEDFUNDS").resample("QS").mean()[-6:]
-    IndustrialProd = fred.get_series("INDPRO").resample("QS").mean()[-6:]
-    Inflation = fred.get_series("CPIAUCSL").resample('QS').mean()[-6:]
+    Unemployment = fred.get_series("UNRATE").resample("QS").mean()[-7:-1]
+    InterestRate = fred.get_series("FEDFUNDS").resample("QS").mean()[-7:-1]
+    IndustrialProd = fred.get_series("INDPRO").resample("QS").mean()[-7:-1]
+    Inflation = fred.get_series("CPIAUCSL").resample('QS').mean()[-7:-1]
     
     # Create a DataFrame with the macroeconomic data
     row_data = {
@@ -31,7 +31,7 @@ def get_macro_data(api_key: str) -> pd.DataFrame:
         "IndustrialProd": IndustrialProd,
         "Inflation": Inflation,
     }
-    quarters = ['_2024Q2','_2024Q3','_2024Q4','_2025Q1','_2025Q2']
+    quarters = ['_2024Q1','_2024Q2','_2024Q3','_2024Q4','_2025Q1']
     
     macro = {f"{name}{q}": float(v)
             for name, s in row_data.items()
