@@ -48,7 +48,6 @@ def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
         .astype(str)
         .str.replace(r'[^0-9.\-eE]', '', regex=True))
     caps = pd.to_numeric(caps, errors='coerce')
-    print(caps)
     
     # Create the market cap bins. Looks like the market value is in thousands of dollars so we need to actually adjust our bins down by 1000
     bins = np.array([0, 50e6, 250e6, 2e9, 10e9, 200e9, np.inf]) / 1e3
