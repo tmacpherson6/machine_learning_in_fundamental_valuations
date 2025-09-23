@@ -4,9 +4,10 @@ VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-.PHONY: all venv 
-all: datasets/Russell_3000_With_Macro.csv
+.PHONY: all venv macro cleaned
+all: datasets/Russell_3000_Cleaned.csv
 macro: datasets/Russell_3000_With_Macro.csv
+cleaned: datasets/Russell_3000_Cleaned.csv
 
 # Create virtual environment and install dependencies
 venv: $(PYTHON)
