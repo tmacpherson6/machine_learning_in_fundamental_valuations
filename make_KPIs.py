@@ -19,8 +19,17 @@ def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
     """
     # Create Key Performance Indicators (KPI's) from HBS article
     # https://online.hbs.edu/blog/post/financial-performance-measures
-    dataset = input_df.copy()
-    quarters = ['_2024Q2', '_2024Q3', '_2024Q4', '_2025Q1', '_2025Q2']
+
+    # Make a list of quarters in the data
+    quarters = set()
+    for column in dataset.columns:
+        if column[-2] == 'Q':
+            quarters.add(column[-7:])
+    # Drop 2024Q1 if needed:
+    if 'Revenue_2024Q1' not in dataset.columns:
+        quarters.discard('_2024Q1')
+    quarters = sorted(list(quarters))
+
     # Gross Profit Margin = (Revenue - Cost of Revenue) / Revenue
     KPI = 'KPI_GrossProfitMargin'
     for quarter in quarters:
