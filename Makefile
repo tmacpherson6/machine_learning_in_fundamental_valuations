@@ -4,10 +4,21 @@ VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-.PHONY: all venv macro cleaned
-all: datasets/Russell_3000_Cleaned.csv
+# --- Train/Test split configuration ---
+SPLIT_SCRIPT := train_test_split.py
+TARGET_TAG   := _2025Q2
+SPLIT_DIR    := datasets
+X_TRAIN := $(SPLIT_DIR)/X_train.csv
+Y_TRAIN := $(SPLIT_DIR)/y_train.csv
+X_TEST  := $(SPLIT_DIR)/X_test.csv
+Y_TEST  := $(SPLIT_DIR)/y_test.csv
+SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
+
+.PHONY: all venv macro cleaned split clean-split
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
 macro: datasets/Russell_3000_With_Macro.csv
 cleaned: datasets/Russell_3000_Cleaned.csv
+split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
 
 # Create virtual environment and install dependencies
 venv: $(PYTHON)
@@ -33,6 +44,16 @@ datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv dat
 datasets/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
 	"$(PYTHON)" clean.py $< $@
 
+# --- Train/Test split: produce all four outputs via a stamp ---
+$(SPLIT_STAMP): datasets/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
+	cd $(SPLIT_DIR) && "$(PYTHON)" "../$(SPLIT_SCRIPT)" "Russell_3000_Cleaned.csv" "$(TARGET_TAG)"
+	touch $@
+
+$(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST): $(SPLIT_STAMP)
+
+clean-split:
+	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
+
 #----------------------------------------------------------------------------
 # Still Need to Create These
 #----------------------------------------------------------------------------
@@ -42,7 +63,7 @@ datasets/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py
 #	"$(PYTHON)" imputation.py $< $@
 
 # Feature engineering on the cleaned dataset
-#datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Imupted.csv feature_engineering.py | datasets $(VENV)/.deps
+#datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Imputed.csv feature_engineering.py | datasets $(VENV)/.deps
 #	"$(PYTHON)" feature_engineering.py $< $@
 
 # If the datasets directory does not exist, create it
