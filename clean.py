@@ -12,6 +12,15 @@ import numpy as np
 import pandas as pd
 
 
+def string_to_float(input_Series: pd.Series) -> pd.Series:
+    """Converts a 'numeric' Series of dtype string to dtype float.
+    
+    Keyword Arguments:
+    input_Series -- a pandas Series to be converted from str to float
+    """
+    return input_Series.apply(str.replace, args=(',', '')).astype(np.float64)
+
+
 def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe.
     
@@ -49,7 +58,23 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
         for index in index_where_zero:
             indexes_to_drop.add(index)
     dataset.drop(index=indexes_to_drop, inplace=True)
+    # Modify Location using One-Hot-Encoding
+    # 1 = company in U.S., 0 = company outside U.S.
+    locations = [location for location in dataset['Location'].unique()]
+    replace_dict = {}
+    for location in locations:
+        if location == 'United States':
+            replace_dict[location] = 1
+        else:
+            replace_dict[location] = 0
+    dataset['Location'] = dataset['Location'].replace(replace_dict)
+    # Drop unnecessary or problematic columns
+    columns_to_drop = ['Weight (%)', 'Price', 'Quantity', 'Notional Value']
+    # Convert columns with string values to floating point
+    for column in ['Market Value']:
+        dataset[column] = string_to_float(dataset[column])
     return dataset
+
 
 def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
     """Adds market cap categories to the dataframe."""
@@ -58,7 +83,8 @@ def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
         .str.replace(r'[^0-9.\-eE]', '', regex=True))
     caps = pd.to_numeric(caps, errors='coerce')
     
-    # Create the market cap bins. Looks like the market value is in thousands of dollars so we need to actually adjust our bins down by 1000
+    # Create the market cap bins. Looks like the market value is in thousands of dollars
+    # so we need to actually adjust our bins down by 1000
     bins = np.array([0, 50e6, 250e6, 2e9, 10e9, 200e9, np.inf]) / 1e3
     # Create the labels for the market caps
     labels = ['Nano-Cap','Micro-Cap','Small-Cap','Mid-Cap','Large-Cap','Mega-Cap']
@@ -66,7 +92,10 @@ def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
     # Apply to the dataset
     dataset['Market Cap'] = pd.cut(caps, bins=bins, labels=labels, right=False, include_lowest=True)
     return dataset
-    
+
+
+pd.set_option("future.no_silent_downcasting", True)
+
 if __name__ == '__main__':
     # Get command line arguments
     parser = argparse.ArgumentParser()
@@ -81,7 +110,8 @@ if __name__ == '__main__':
     df = pd.read_csv(args.input_file)
     cleaned_df = clean(df)
     cleaned_df = market_cap_categories(cleaned_df)
-    print("Added Market Cap Categories to DataFrame")
+    print('Added Market Cap Categories to DataFrame')
     cleaned_df.to_csv(args.output_file, index=False)
-    print(f"Cleaned file saved to {args.output_file}")
+    print(f'Cleaned file saved to {args.output_file}.')
+    print(f'{cleaned_df.shape[0]} rows retained.')
 
