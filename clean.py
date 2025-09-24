@@ -40,6 +40,15 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     quarters = ['_2024Q2', '_2024Q3', '_2024Q4', '_2025Q1', '_2025Q2']
     columns_to_drop = ['ShortTermDebtOrCurrentLiab' + quarter for quarter in quarters]
     dataset.drop(columns=columns_to_drop, inplace=True)
+    # Drop companies where key variables are zero (90 total)
+    non_zero_cols = ['Revenue', 'TotalAssets', 'TotalEquity', 'CurrentLiabilities']
+    indexes_to_drop = set()
+    for column in non_zero_cols:
+        for quarter in quarters:
+            index_where_zero = dataset[dataset[column + quarter] == 0].index
+        for index in index_where_zero:
+            indexes_to_drop.add(index)
+    dataset.drop(index=indexes_to_drop, inplace=True)
     return dataset
 
 def market_cap_categories(dataset: pd.DataFrame) -> pd.DataFrame:
