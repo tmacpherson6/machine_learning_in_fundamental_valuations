@@ -68,6 +68,6 @@ datasets/X_train_ready.csv: Missing_value_fillin.ipynb datasets/X_train.csv
 #datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Imputed.csv feature_engineering.py | datasets $(VENV)/.deps
 #	"$(PYTHON)" feature_engineering.py $< $@
 
-# If the datasets directory does not exist, create it
+# If the datasets directory does not exist, create itt
 datasets:
 	mkdir -p $@
