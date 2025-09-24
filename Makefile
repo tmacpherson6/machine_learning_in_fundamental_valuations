@@ -55,7 +55,9 @@ clean-split:
 	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
 
 #----------------------------------------------------------------------------
-# Still Need to Create These
+# Create X_train_ready.csv from imputation script
+datasets/X_train_ready.csv: Missing_value_fillin.ipynb datasets/X_train.csv
+	jupyter nbconvert --to notebook --execute Missing_value_fillin.ipynb --output tmp_out.ipynb
 #----------------------------------------------------------------------------
 
 # Data Imputation on the cleaned dataset
