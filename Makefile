@@ -8,23 +8,33 @@ PIP    := $(VENV)/bin/pip
 SPLIT_SCRIPT := train_test_split.py
 TARGET_TAG   := _2025Q2
 SPLIT_DIR    := datasets
+
 X_TRAIN := $(SPLIT_DIR)/X_train.csv
 Y_TRAIN := $(SPLIT_DIR)/y_train.csv
 X_TEST  := $(SPLIT_DIR)/X_test.csv
 Y_TEST  := $(SPLIT_DIR)/y_test.csv
+
 X_TRAIN_FILLED := $(SPLIT_DIR)/X_train_filled.csv
+X_TEST_FILLED  := $(SPLIT_DIR)/X_test_filled.csv
+
 X_TRAIN_FILLED_KPIS := $(SPLIT_DIR)/X_train_filled_KPIs.csv
-X_TEST_FILLED_KPIS := $(SPLIT_DIR)/X_test_filled_KPIs.csv
-X_TEST_FILLED := $(SPLIT_DIR)/X_test_filled.csv
+X_TEST_FILLED_KPIS  := $(SPLIT_DIR)/X_test_filled_KPIs.csv
+
 X_TRAIN_FILLED_KPIS_QOQ := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ.csv
 X_TEST_FILLED_KPIS_QOQ  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ.csv
-SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
 
-.PHONY: all venv macro cleaned split clean-split
-all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED) $(X_TEST_FILLED_KPIS) $(X_TEST_FILLED_KPIS_QOQ)
-macro: datasets/Russell_3000_With_Macro.csv
-cleaned: datasets/Russell_3000_Cleaned.csv
-split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
+SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
+QOQ_STAMP   := $(SPLIT_DIR)/.kpis_qoq.stamp
+
+.PHONY: all venv macro cleaned split clean-split clean-qoq
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) \
+     $(X_TRAIN_FILLED) $(X_TEST_FILLED) \
+     $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED_KPIS) \
+     $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ)
+
+macro:  $(SPLIT_DIR)/Russell_3000_With_Macro.csv
+cleaned: $(SPLIT_DIR)/Russell_3000_Cleaned.csv
+split:   $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
 
 # Create virtual environment and install dependencies
 venv: $(PYTHON)
@@ -39,50 +49,52 @@ $(VENV)/.deps: requirements.txt | $(PYTHON)
 	touch $@
 
 # Generate the dataset with fundamentals from the Base Stock Dataset
-datasets/Russell_3000_Fundamentals.csv: datasets/Russell_3000.csv data_acquisition.py | datasets $(VENV)/.deps
+$(SPLIT_DIR)/Russell_3000_Fundamentals.csv: $(SPLIT_DIR)/Russell_3000.csv data_acquisition.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition.py $< $@
 
 # Add Macroeconomic data to the dataset
-datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv data_acquisition_macro.py | datasets $(VENV)/.deps
+$(SPLIT_DIR)/Russell_3000_With_Macro.csv: $(SPLIT_DIR)/Russell_3000_Fundamentals.csv data_acquisition_macro.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition_macro.py $< $@
 
 # Clean the generated dataset
-datasets/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
+$(SPLIT_DIR)/Russell_3000_Cleaned.csv: $(SPLIT_DIR)/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
 	"$(PYTHON)" clean.py $< $@
 
-# Train/Test split: produce all four outputs via a stamp file (this means it will only be done once not four times)
-$(SPLIT_STAMP): datasets/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
+# --- Train/Test split via stamp (tag-sensitive) ---
+$(SPLIT_STAMP): $(SPLIT_DIR)/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
 	cd $(SPLIT_DIR) && "$(PYTHON)" "../$(SPLIT_SCRIPT)" "Russell_3000_Cleaned.csv" "$(TARGET_TAG)"
 	touch $@
 
 $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST): $(SPLIT_STAMP)
 
 clean-split:
-	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
+	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_DIR)/.train_test*.split
 
-# Fill in the missing values for X_train and X_test
-datasets/X_train_filled.csv datasets/X_test_filled.csv: \
-        datasets/X_train.csv datasets/X_test.csv X_train_X_test_filled.py | datasets $(VENV)/.deps
-	"$(PYTHON)" X_train_X_test_filled.py "datasets/X_train.csv" "datasets/X_test.csv" \
-	    "datasets/X_train_filled.csv" "datasets/X_test_filled.csv"
+# Fill missing values for X_train and X_test
+$(SPLIT_DIR)/X_train_filled.csv $(SPLIT_DIR)/X_test_filled.csv: \
+        $(SPLIT_DIR)/X_train.csv $(SPLIT_DIR)/X_test.csv X_train_X_test_filled.py | datasets $(VENV)/.deps
+	"$(PYTHON)" X_train_X_test_filled.py "$(SPLIT_DIR)/X_train.csv" "$(SPLIT_DIR)/X_test.csv" \
+	    "$(SPLIT_DIR)/X_train_filled.csv" "$(SPLIT_DIR)/X_test_filled.csv"
 
-
-# Add KPI for X_train_filled
-datasets/X_train_filled_KPIs.csv: datasets/X_train_filled.csv make_KPIs.py | datasets $(VENV)/.deps
+# KPIs
+$(SPLIT_DIR)/X_train_filled_KPIs.csv: $(SPLIT_DIR)/X_train_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
 
-# Add KPI for X_test_filled
-datasets/X_test_filled_KPIs.csv: datasets/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
+$(SPLIT_DIR)/X_test_filled_KPIs.csv: $(SPLIT_DIR)/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
 
-# Add QoQ features for X_train_filled
-datasets/X_train_filled_KPIs_QoQ.csv: datasets/X_train_filled_KPIs.csv make_QoQ.py | datasets $(VENV)/.deps
-	"$(PYTHON)" make_QoQ.py $< $@
+# QoQ features: single invocation producing both outputs
+$(QOQ_STAMP): $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED_KPIS) make_QoQ.py | datasets $(VENV)/.deps
+	"$(PYTHON)" make_QoQ.py \
+	  "$(X_TRAIN_FILLED_KPIS)" "$(X_TEST_FILLED_KPIS)" \
+	  "$(X_TRAIN_FILLED_KPIS_QOQ)" "$(X_TEST_FILLED_KPIS_QOQ)"
+	touch $@
 
-# Add QoQ features for X_test_filled
-datasets/X_test_filled_KPIs_QoQ.csv: datasets/X_test_filled_KPIs.csv make_QoQ.py | datasets $(VENV)/.deps
-	"$(PYTHON)" make_QoQ.py $< $@
+$(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ): $(QOQ_STAMP)
 
-# If the datasets directory does not exist, create it
+clean-qoq:
+	rm -f $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ) $(QOQ_STAMP)
+
+# Ensure datasets/ exists
 datasets:
 	mkdir -p $@
