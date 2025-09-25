@@ -12,10 +12,11 @@ X_TRAIN := $(SPLIT_DIR)/X_train.csv
 Y_TRAIN := $(SPLIT_DIR)/y_train.csv
 X_TEST  := $(SPLIT_DIR)/X_test.csv
 Y_TEST  := $(SPLIT_DIR)/y_test.csv
+X_TRAIN_FILLED := $(SPLIT_DIR)/X_train_filled.csv
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
 
 .PHONY: all venv macro cleaned split clean-split
-all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED)
 macro: datasets/Russell_3000_With_Macro.csv
 cleaned: datasets/Russell_3000_Cleaned.csv
 split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
@@ -55,10 +56,9 @@ clean-split:
 	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
 
 #----------------------------------------------------------------------------
-# Create X_train_ready.csv from imputation script
-datasets/X_train_ready.csv: Missing_value_fillin.ipynb datasets/X_train.csv
-	jupyter nbconvert --to notebook --execute Missing_value_fillin.ipynb --output tmp_out.ipynb
-#----------------------------------------------------------------------------
+# Fill in the missing values for X_train
+datasets/X_train_filled.csv: datasets/X_train.csv X_train_filled.py | datasets $(VENV)/.deps
+	"$(PYTHON)" X_train_filled.py $< $@
 
 # Data Imputation on the cleaned dataset
 #datasets/Russell_3000_Imputed.csv: datasets/Russell_3000_Cleaned.csv imputation.py | datasets $(VENV)/.deps
