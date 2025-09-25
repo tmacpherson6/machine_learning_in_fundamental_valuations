@@ -19,7 +19,7 @@ X_TEST_FILLED := $(SPLIT_DIR)/X_test_filled.csv
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
 
 .PHONY: all venv macro cleaned split clean-split
-all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED) $(X_TEST_FILLED_KPIS)
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED) $(X_TEST_FILLED_KPIS) $(X_TEST_FILLED_KPIS_QOQ)
 macro: datasets/Russell_3000_With_Macro.csv
 cleaned: datasets/Russell_3000_Cleaned.csv
 split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
@@ -73,6 +73,14 @@ datasets/X_train_filled_KPIs.csv: datasets/X_train_filled.csv make_KPIs.py | dat
 datasets/X_test_filled_KPIs.csv: datasets/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
 
-# If the datasets directory does not exist, create itt
+# Add QoQ features for X_train_filled
+datasets/X_train_filled_KPIs_QoQ.csv: datasets/X_train_filled_KPIs.csv make_QoQ.py | datasets $(VENV)/.deps
+	"$(PYTHON)" make_QoQ.py $< $@
+
+# Add QoQ features for X_test_filled
+datasets/X_test_filled_KPIs_QoQ.csv: datasets/X_test_filled_KPIs.csv make_QoQ.py | datasets $(VENV)/.deps
+	"$(PYTHON)" make_QoQ.py $< $@
+
+# If the datasets directory does not exist, create it
 datasets:
 	mkdir -p $@
