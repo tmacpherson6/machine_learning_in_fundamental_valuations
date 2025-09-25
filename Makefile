@@ -14,11 +14,12 @@ X_TEST  := $(SPLIT_DIR)/X_test.csv
 Y_TEST  := $(SPLIT_DIR)/y_test.csv
 X_TRAIN_FILLED := $(SPLIT_DIR)/X_train_filled.csv
 X_TRAIN_FILLED_KPIS := $(SPLIT_DIR)/X_train_filled_KPIs.csv
+X_TEST_FILLED_KPIS := $(SPLIT_DIR)/X_test_filled_KPIs.csv
 X_TEST_FILLED := $(SPLIT_DIR)/X_test_filled.csv
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
 
 .PHONY: all venv macro cleaned split clean-split
-all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED)
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED) $(X_TEST_FILLED_KPIS)
 macro: datasets/Russell_3000_With_Macro.csv
 cleaned: datasets/Russell_3000_Cleaned.csv
 split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
@@ -67,6 +68,10 @@ datasets/X_train_filled.csv datasets/X_test_filled.csv: \
 
 # Add KPI for X_train_filled
 datasets/X_train_filled_KPIs.csv: datasets/X_train_filled.csv make_KPIs.py | datasets $(VENV)/.deps
+	"$(PYTHON)" make_KPIs.py $< $@
+
+# Add KPI for X_test_filled
+datasets/X_test_filled_KPIs.csv: datasets/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
 
 # Data Imputation on the cleaned dataset
