@@ -48,7 +48,7 @@ datasets/Russell_3000_With_Macro.csv: datasets/Russell_3000_Fundamentals.csv dat
 datasets/Russell_3000_Cleaned.csv: datasets/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
 	"$(PYTHON)" clean.py $< $@
 
-# --- Train/Test split: produce all four outputs via a stamp ---
+# Train/Test split: produce all four outputs via a stamp file (this means it will only be done once not four times)
 $(SPLIT_STAMP): datasets/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
 	cd $(SPLIT_DIR) && "$(PYTHON)" "../$(SPLIT_SCRIPT)" "Russell_3000_Cleaned.csv" "$(TARGET_TAG)"
 	touch $@
@@ -58,7 +58,6 @@ $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST): $(SPLIT_STAMP)
 clean-split:
 	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
 
-#----------------------------------------------------------------------------
 # Fill in the missing values for X_train and X_test
 datasets/X_train_filled.csv datasets/X_test_filled.csv: \
         datasets/X_train.csv datasets/X_test.csv X_train_X_test_filled.py | datasets $(VENV)/.deps
@@ -73,14 +72,6 @@ datasets/X_train_filled_KPIs.csv: datasets/X_train_filled.csv make_KPIs.py | dat
 # Add KPI for X_test_filled
 datasets/X_test_filled_KPIs.csv: datasets/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
-
-# Data Imputation on the cleaned dataset
-#datasets/Russell_3000_Imputed.csv: datasets/Russell_3000_Cleaned.csv imputation.py | datasets $(VENV)/.deps
-#	"$(PYTHON)" imputation.py $< $@
-
-# Feature engineering on the cleaned dataset
-#datasets/Russell_3000_Featured.csv: datasets/Russell_3000_Imputed.csv feature_engineering.py | datasets $(VENV)/.deps
-#	"$(PYTHON)" feature_engineering.py $< $@
 
 # If the datasets directory does not exist, create itt
 datasets:
