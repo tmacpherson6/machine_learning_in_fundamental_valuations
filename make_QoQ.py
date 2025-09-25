@@ -5,11 +5,31 @@ This python script is used to perform feature engineering on a dataset containin
 import argparse
 import numpy as np
 import pandas as pd
+from typing import Iterable, List, Sequence, Tuple
 from data_acquisition import upload_file, save_to_csv
 
 
 
-def get_unique_columns(columns):
+def get_unique_columns(columns: Iterable[str]) -> List[str]:
+    """
+    Derive base feature names from a list of column labels.
+
+    Logic:
+      - Replace spaces with underscores.
+      - If the column starts with 'KPI_', keep the first two tokens ('KPI_<name>').
+      - Otherwise keep only the first token before the first underscore.
+      - Drop non-repetitive identifiers (e.g., Name, Ticker, macro singletons).
+
+    Parameters
+    ----------
+    columns : Iterable[str]
+        Original column names (e.g., 'Revenue_2025Q2', 'KPI_Margin_2025Q2').
+
+    Returns
+    -------
+    List[str]
+        Unique base column names to iterate over (e.g., ['Revenue', 'KPI_Margin', ...]).
+    """
     unique_columns = set()
     for column in columns:
         column = column.replace(' ','_')
@@ -28,7 +48,36 @@ def get_unique_columns(columns):
     return unique_columns
 
 
-def quarterly_changes(dataset, unique_columns, quarters):
+def quarterly_changes(
+    dataset: pd.DataFrame,
+    unique_columns: Sequence[str],
+    quarters: Sequence[str],
+) -> pd.DataFrame:
+    """
+    Create QoQ change features for each base column across consecutive quarters.
+
+    For each base `column`, computes:
+        {column}_QoQ_{q_{t-1}[-4:]}_{q_t[-4:]} = (value_t - value_{t-1}) / value_{t-1}
+
+    Notes
+    -----
+    - Mutates `dataset` in place by adding new QoQ columns and also returns it.
+    - Broad try/except is used to handle series that start later (no first quarter).
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame
+        Wide table with per-quarter columns like '<column><quarter>'.
+    unique_columns : Sequence[str]
+        Base names to compute QoQ for (e.g., ['Revenue', 'KPI_Margin']).
+    quarters : Sequence[str]
+        Ordered quarter suffixes (e.g., ['_2024Q2','_2024Q3','_2024Q4','_2025Q1']).
+
+    Returns
+    -------
+    pd.DataFrame
+        The same DataFrame with additional QoQ feature columns.
+    """
     for column in unique_columns:
         try:
             for val in range(1,len(quarters)):
@@ -46,7 +95,26 @@ def quarterly_changes(dataset, unique_columns, quarters):
 
 
 
-def get_rate_columns(train_dataset: pd.DataFrame):
+def get_rate_columns(train_dataset: pd.DataFrame) -> Tuple[List[str], List[str]]:
+    """
+    Infer QoQ source columns and their quarter suffixes from existing QoQ feature names.
+
+    Expects QoQ feature columns named like:
+        '<Base>_QoQ_<YYYYQx>_<YYYYQy>'
+    Example: 'Revenue_QoQ_2024Q3_2024Q4'
+
+    Parameters
+    ----------
+    train_dataset : pd.DataFrame
+        DataFrame containing QoQ columns.
+
+    Returns
+    -------
+    Tuple[List[str], List[str]]
+        - QoQ base columns (e.g., ['Revenue', 'KPI_Margin', ...])
+        - Sorted list of quarter window suffixes (the trailing 10 chars), e.g.,
+          ['_2024Q1_2024Q2', '_2024Q2_2024Q3', ...]
+    """
     columns = train_dataset.columns
     # Use sets to avoid duplicates
     QoQ_columns = set()
@@ -64,7 +132,21 @@ def get_rate_columns(train_dataset: pd.DataFrame):
     return QoQ_columns, QoQ_quarters
 
 
-def safe_slope(vals: list[float]) -> float:
+def safe_slope(vals: Sequence[float]) -> float:
+    """
+    Compute the OLS slope of a sequence against t = 0..n-1, robust to NaN/Inf.
+
+    Parameters
+    ----------
+    vals : Sequence[float]
+        Numeric series values ordered in time.
+
+    Returns
+    -------
+    float
+        Slope of y ~ a + b * t. Returns NaN if <2 finite points.
+        Returns 0.0 if the design becomes singular.
+    """
     a = np.asarray(vals, float)
     a = a[np.isfinite(a)]
     n = a.size
@@ -81,16 +163,36 @@ def safe_slope(vals: list[float]) -> float:
     
     return (n*Sty - St*Sy) / denom
 
-def get_rate_data(row, cols, quarters):
+def get_rate_data(
+    row: pd.Series,
+    cols: Sequence[str],
+    quarters: Sequence[str],
+) -> pd.Series:
+    """
+    Row-wise helper to compute per-column growth 'Rate' using `safe_slope`.
+
+    For each base name `col`, collects values from the concatenated quarter
+    columns `f"{col}{q}"` for q in `quarters`, filters to finite values,
+    and writes `f"{col}_Rate"` back into the row.
+
+    Parameters
+    ----------
+    row : pd.Series
+        A single DataFrame row (use with `df.apply(..., axis=1)`).
+    cols : Sequence[str]
+        Base column names to process.
+    quarters : Sequence[str]
+        Ordered quarter suffixes to fetch for each base column.
+
+    Returns
+    -------
+    pd.Series
+        The same row with additional '<col>_Rate' fields.
+    """
     for col in cols:
         vals = [row.get(f"{col}{q}", np.nan) for q in quarters]
         row[f"{col}_Rate"] = safe_slope(vals)
     return row
-
-
-
-
-
 
 
 if __name__ == "__main__":
