@@ -16,7 +16,9 @@ X_TRAIN_FILLED := $(SPLIT_DIR)/X_train_filled.csv
 X_TRAIN_FILLED_KPIS := $(SPLIT_DIR)/X_train_filled_KPIs.csv
 X_TEST_FILLED_KPIS := $(SPLIT_DIR)/X_test_filled_KPIs.csv
 X_TEST_FILLED := $(SPLIT_DIR)/X_test_filled.csv
-SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
+X_TRAIN_FILLED_KPIS_QOQ := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ.csv
+X_TEST_FILLED_KPIS_QOQ  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ.csv
+SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
 
 .PHONY: all venv macro cleaned split clean-split
 all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED) $(X_TEST_FILLED_KPIS) $(X_TEST_FILLED_KPIS_QOQ)
