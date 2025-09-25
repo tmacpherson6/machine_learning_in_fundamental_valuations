@@ -11,7 +11,7 @@ import argparse
 import pandas as pd
 
 
-def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
+def make_KPIs(dataset: pd.DataFrame) -> pd.DataFrame:
     """Creates KPIs from company financial data.
     
     This function is not very modular.  It uses column names that are
