@@ -4,7 +4,7 @@ VENV   := $(HOME)/.venvs/milestoneII
 PYTHON := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-# --- Train/Test split configuration ---
+# Train/Test split configurations
 SPLIT_SCRIPT := train_test_split.py
 TARGET_TAG   := _2025Q2
 SPLIT_DIR    := datasets
@@ -23,6 +23,7 @@ X_TEST_FILLED_KPIS  := $(SPLIT_DIR)/X_test_filled_KPIs.csv
 X_TRAIN_FILLED_KPIS_QOQ := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ.csv
 X_TEST_FILLED_KPIS_QOQ  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ.csv
 
+# Stamp files for tracking
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
 QOQ_STAMP   := $(SPLIT_DIR)/.kpis_qoq.stamp
 
@@ -60,7 +61,7 @@ $(SPLIT_DIR)/Russell_3000_With_Macro.csv: $(SPLIT_DIR)/Russell_3000_Fundamentals
 $(SPLIT_DIR)/Russell_3000_Cleaned.csv: $(SPLIT_DIR)/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
 	"$(PYTHON)" clean.py $< $@
 
-# --- Train/Test split via stamp (tag-sensitive) ---
+# Train/Test split via stamp (tag-sensitive) to avoid unnecessary re-splitting
 $(SPLIT_STAMP): $(SPLIT_DIR)/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
 	cd $(SPLIT_DIR) && "$(PYTHON)" "../$(SPLIT_SCRIPT)" "Russell_3000_Cleaned.csv" "$(TARGET_TAG)"
 	touch $@
@@ -83,7 +84,7 @@ $(SPLIT_DIR)/X_train_filled_KPIs.csv: $(SPLIT_DIR)/X_train_filled.csv make_KPIs.
 $(SPLIT_DIR)/X_test_filled_KPIs.csv: $(SPLIT_DIR)/X_test_filled.csv make_KPIs.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_KPIs.py $< $@
 
-# QoQ features: single invocation producing both outputs
+# QoQ features
 $(QOQ_STAMP): $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED_KPIS) make_QoQ.py | datasets $(VENV)/.deps
 	"$(PYTHON)" make_QoQ.py \
 	  "$(X_TRAIN_FILLED_KPIS)" "$(X_TEST_FILLED_KPIS)" \
