@@ -14,10 +14,11 @@ X_TEST  := $(SPLIT_DIR)/X_test.csv
 Y_TEST  := $(SPLIT_DIR)/y_test.csv
 X_TRAIN_FILLED := $(SPLIT_DIR)/X_train_filled.csv
 X_TRAIN_FILLED_KPIS := $(SPLIT_DIR)/X_train_filled_KPIs.csv
+X_TEST_FILLED := $(SPLIT_DIR)/X_test_filled.csv
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test.split
 
 .PHONY: all venv macro cleaned split clean-split
-all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS)
+all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(X_TRAIN_FILLED) $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED)
 macro: datasets/Russell_3000_With_Macro.csv
 cleaned: datasets/Russell_3000_Cleaned.csv
 split: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
@@ -57,9 +58,12 @@ clean-split:
 	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_STAMP)
 
 #----------------------------------------------------------------------------
-# Fill in the missing values for X_train
-datasets/X_train_filled.csv: datasets/X_train.csv X_train_filled.py | datasets $(VENV)/.deps
-	"$(PYTHON)" X_train_filled.py $< $@
+# Fill in the missing values for X_train and X_test
+datasets/X_train_filled.csv datasets/X_test_filled.csv: \
+        datasets/X_train.csv datasets/X_test.csv X_train_X_test_filled.py | datasets $(VENV)/.deps
+	"$(PYTHON)" X_train_X_test_filled.py "datasets/X_train.csv" "datasets/X_test.csv" \
+	    "datasets/X_train_filled.csv" "datasets/X_test_filled.csv"
+
 
 # Add KPI for X_train_filled
 datasets/X_train_filled_KPIs.csv: datasets/X_train_filled.csv make_KPIs.py | datasets $(VENV)/.deps
