@@ -21,6 +21,19 @@ def string_to_float(input_Series: pd.Series) -> pd.Series:
     return input_Series.apply(str.replace, args=(',', '')).astype(np.float64)
 
 
+def get_quarters(input_df: pd.DataFrame) -> list:
+    """Gake a list of quarters in the data."""
+    quarters = set()
+    for column in input_df.columns:
+        if column[-2] == 'Q':
+            quarters.add(column[-7:])
+    # Drop 2024Q1 if needed:
+    if 'Revenue_2024Q1' not in input_df.columns:
+        quarters.discard('_2024Q1')
+    quarters = sorted(list(quarters))
+    return quarters
+
+
 def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     """Cleans the dataframe.
     
@@ -28,28 +41,30 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     specific to the Russell_3000 data. 
     """
     dataset = input_df.copy()
+    quarters = get_quarters(dataset)
     # Drop duplicates
     dataset.drop_duplicates(inplace=True)
+    duplicated_rows = dataset[dataset.duplicated()]
+    print(f'Duplicated rows remaining: {duplicated_rows.shape[0]}')
+          
     # Drop where ticker is duplicated
     duplicates = dataset.loc[(
         dataset.duplicated('Ticker', keep=False)
     )].sort_values('Ticker')
     dataset.drop(index=list(duplicates.index), inplace=True)
-    # Keep only one Ticker column
-    dataset.drop(columns=['OriginalTicker', 'YahooSymbol'], inplace=True)
+    duplicated_Tickers = dataset[dataset.duplicated('Ticker')]
+    print(f'Duplicated Tickers remaining: {duplicated_Tickers.shape[0]}')
+    
     # Keep only entries that are classified as Equity
     dataset = dataset[dataset['Asset Class'] == 'Equity'].copy()
-    dataset.drop(columns=['Asset Class'], inplace=True)
-    # Everything is in USD, so drop that feature
-    dataset.drop(columns=['Currency'], inplace=True)
+    print(f'Asset Classes remaining: {dataset['Asset Class'].unique()}')
+    
     # Keep only companies in NASDAQ and NYSE
     exchanges_to_keep = ['NASDAQ', 'New York Stock Exchange Inc.']
     dataset = dataset[dataset['Exchange'].isin(exchanges_to_keep)].copy()
-    # Drop 'ShortTermDebtOrCurrentLiab': 40% missing values
-    quarters = ['_2024Q2', '_2024Q3', '_2024Q4', '_2025Q1', '_2025Q2']
-    columns_to_drop = ['ShortTermDebtOrCurrentLiab' + quarter for quarter in quarters]
-    dataset.drop(columns=columns_to_drop, inplace=True)
-    # Drop companies where key variables are zero (90 total)
+    print(f'Exchanges remaining: {dataset.Exchange.unique()}')
+    
+   # Drop companies where key variables are zero (90 total in Russell_3000)
     non_zero_cols = ['Revenue', 'TotalAssets', 'TotalEquity', 'CurrentLiabilities']
     indexes_to_drop = set()
     for column in non_zero_cols:
@@ -58,6 +73,8 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
         for index in index_where_zero:
             indexes_to_drop.add(index)
     dataset.drop(index=indexes_to_drop, inplace=True)
+    print(f'Dropped {len(indexes_to_drop)} rows with value zero (0) in: {non_zero_cols}.')
+    
     # Modify Location using One-Hot-Encoding
     # 1 = company in U.S., 0 = company outside U.S.
     locations = [location for location in dataset['Location'].unique()]
@@ -68,11 +85,36 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
         else:
             replace_dict[location] = 0
     dataset['Location'] = dataset['Location'].replace(replace_dict)
-    # Drop unnecessary or problematic columns
-    columns_to_drop = ['Weight (%)', 'Price', 'Quantity', 'Notional Value']
+    new_locations = dataset.Location.unique()
+    print(f'Unique values for Location (1=U.S., 0=outside U.S.): {new_locations}')
+        
     # Convert columns with string values to floating point
     for column in ['Market Value']:
         dataset[column] = string_to_float(dataset[column])
+    print(f'Market Value is now of type {dataset['Market Value'].dtype}')
+    
+    # Drop unnecessary or problematic columns
+    columns_to_drop = ['ShortTermDebtOrCurrentLiab' + quarter for quarter in quarters]
+    columns_to_drop = ['OriginalTicker',
+                       'YahooSymbol',
+                       'Asset Class',
+                       'Currency',
+                       'Weight (%)',
+                       'Price',
+                       'Quantity',
+                       'Notional Value'
+                      ] + columns_to_drop
+    dataset.drop(columns=columns_to_drop, inplace=True)
+    print('\nDropped the following columns:')
+    for column in columns_to_drop:
+        print(column)
+
+    # Report final status
+    print('\nColumns remaining:')
+    for column in dataset.columns:
+        print(column)
+    print(f'{dataset.shape[1]} columns (features) remaining.')
+    print(f'{dataset.shape[0]} rows (companies) remaining.')
     return dataset
 
 
@@ -108,10 +150,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
+    print(f'Cleaning ' + args.input_file + '...')
     cleaned_df = clean(df)
     cleaned_df = market_cap_categories(cleaned_df)
     print('Added Market Cap Categories to DataFrame')
     cleaned_df.to_csv(args.output_file, index=False)
-    print(f'Cleaned file saved to {args.output_file}.')
-    print(f'{cleaned_df.shape[0]} rows retained.')
-
+    print(f'Cleaned file saved to {args.output_file}')
