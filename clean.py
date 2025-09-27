@@ -70,10 +70,15 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     for column in non_zero_cols:
         for quarter in quarters:
             index_where_zero = dataset[dataset[column + quarter] == 0].index
-        for index in index_where_zero:
-            indexes_to_drop.add(index)
+            for index in index_where_zero:
+                indexes_to_drop.add(index)
     dataset.drop(index=indexes_to_drop, inplace=True)
     print(f'Dropped {len(indexes_to_drop)} rows with value zero (0) in: {non_zero_cols}.')
+    zeros_remaining = 0
+    for column in non_zero_cols:
+        for quarter in quarters:
+            zeros_remaining += dataset[column + quarter][dataset[column + quarter] == 0].shape[0]
+    print(f'Number of zero values remaining in key columns: {zeros_remaining}')
     
     # Modify Location using One-Hot-Encoding
     # 1 = company in U.S., 0 = company outside U.S.
@@ -150,9 +155,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
-    print(f'Cleaning ' + args.input_file + '...')
+    print(f'\nCleaning ' + args.input_file + '...')
     cleaned_df = clean(df)
     cleaned_df = market_cap_categories(cleaned_df)
     print('Added Market Cap Categories to DataFrame')
     cleaned_df.to_csv(args.output_file, index=False)
-    print(f'Cleaned file saved to {args.output_file}')
+    print(f'\nCleaned file saved to {args.output_file}')
