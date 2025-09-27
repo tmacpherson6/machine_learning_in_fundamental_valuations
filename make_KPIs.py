@@ -11,25 +11,30 @@ import argparse
 import pandas as pd
 
 
-def make_KPIs(dataset: pd.DataFrame) -> pd.DataFrame:
-    """Creates KPIs from company financial data.
-    
-    This function is not very modular.  It uses column names that are
-    specific to the Russell_3000 data.
-    """
-    # Create Key Performance Indicators (KPI's) from HBS article
-    # https://online.hbs.edu/blog/post/financial-performance-measures
-
-    # Make a list of quarters in the data
+def get_quarters(input_df: pd.DataFrame) -> list:
+    """Gake a list of quarters in the data."""
     quarters = set()
-    for column in dataset.columns:
+    for column in input_df.columns:
         if column[-2] == 'Q':
             quarters.add(column[-7:])
     # Drop 2024Q1 if needed:
-    if 'Revenue_2024Q1' not in dataset.columns:
+    if 'Revenue_2024Q1' not in input_df.columns:
         quarters.discard('_2024Q1')
     quarters = sorted(list(quarters))
+    return quarters
+    
 
+def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
+    """Adds key performance indicators (KPI) to the dataset.
+
+    Based on recommendations from Harvard Business School (HBS),
+    https://online.hbs.edu/blog/post/financial-performance-measures
+    
+    Note: this function is not very modular; it uses column names that are
+    specific to the Russell_3000 data.
+    """
+    dataset = input_df.copy()
+    quarters = get_quarters(dataset)
     # Gross Profit Margin = (Revenue - Cost of Revenue) / Revenue
     KPI = 'KPI_GrossProfitMargin'
     for quarter in quarters:
@@ -111,10 +116,10 @@ if __name__ == '__main__':
     # Get command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'input_file', help='name of input file: Russell_3000_Imputed.csv'
+        'input_file', help='name of input file: X_train_filled.csv, or X_test_filled.csv'
     )
     parser.add_argument(
-        'output_file', help='name of output file: Russell_3000_KPIs.csv'
+        'output_file', help='name of output file: X_train_filled_KPIs.csv, or X_test_filled_KPIs.csv'
     )
     args = parser.parse_args()
     # Load input file, clean dataframe, and write output file

@@ -65,7 +65,16 @@ def clean(input_df: pd.DataFrame) -> pd.DataFrame:
     print(f'Exchanges remaining: {dataset.Exchange.unique()}')
     
    # Drop companies where key variables are zero (90 total in Russell_3000)
-    non_zero_cols = ['Revenue', 'TotalAssets', 'TotalEquity', 'CurrentLiabilities']
+    non_zero_cols = ['Revenue',
+                     'NetIncome',
+                     'CurrentAssets',
+                     'CurrentLiabilities',
+                     'TotalAssets',
+                     'TotalLiabilities',
+                     'TotalEquity',
+                     'TotalDebt',
+                     'CashFromOps'
+                    ]
     indexes_to_drop = set()
     for column in non_zero_cols:
         for quarter in quarters:
