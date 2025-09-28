@@ -91,7 +91,7 @@ def quarterly_changes(
                 # If numbers blow up incredibly large lets clip them to 100,000%
                 qoq = qoq.clip(-1000.0, 1000.0)
 
-                dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = (series_2 - series_1)/series_1
+                dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = qoq
         except:
             for val in range(2,len(quarters)):
                 series_1 = dataset[str(column) + str(quarters[val-1])]
@@ -105,7 +105,7 @@ def quarterly_changes(
                 # If numbers blow up incredibly large lets clip them to 100,000%
                 qoq = qoq.clip(-1000.0, 1000.0)
 
-                dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = (series_2 - series_1)/series_1
+                dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = qoq
 
     print(f"Completed Quarterly Change Calculations")
     return dataset
