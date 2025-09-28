@@ -83,11 +83,28 @@ def quarterly_changes(
             for val in range(1,len(quarters)):
                 series_1 = dataset[str(column) + str(quarters[val-1])]
                 series_2 = dataset[str(column) + str(quarters[val])]
+                denom = series_1.replace(0.0, 0.00000001)
+                qoq = (series_2 - series_1)/denom
+                #What if both were zero?
+                both_zero = (series_1 == 0.0) & (series_2 == 0.0)
+                qoq = qoq.mask(both_zero, 0.0)
+                # If numbers blow up incredibly large lets clip them to 100,000%
+                qoq = qoq.clip(-1000.0, 1000.0)
+
                 dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = (series_2 - series_1)/series_1
         except:
             for val in range(2,len(quarters)):
                 series_1 = dataset[str(column) + str(quarters[val-1])]
                 series_2 = dataset[str(column) + str(quarters[val])]
+                
+                denom = series_1.replace(0.0, 0.00000001)
+                qoq = (series_2 - series_1)/denom
+                #What if both were zero?
+                both_zero = (series_1 == 0.0) & (series_2 == 0.0)
+                qoq = qoq.mask(both_zero, 0.0)
+                # If numbers blow up incredibly large lets clip them to 100,000%
+                qoq = qoq.clip(-1000.0, 1000.0)
+
                 dataset[f'{column}_QoQ_{quarters[val-1][-4:]}_{quarters[val][-4:]}'] = (series_2 - series_1)/series_1
 
     print(f"Completed Quarterly Change Calculations")
@@ -206,10 +223,6 @@ if __name__ == "__main__":
     # Set the output file name and export the data
     train_dataset = upload_file(args.input_train_file)
     test_dataset = upload_file(args.input_test_file)
-    
-    # Get rid of the index column
-    train_dataset.drop(columns=['Unnamed: 0'], inplace=True)
-    test_dataset.drop(columns=['Unnamed: 0'], inplace=True)
 
     columns = train_dataset.columns.tolist()
     quarters = ['_2024Q2','_2024Q3','_2024Q4','_2025Q1']
