@@ -223,10 +223,10 @@ if __name__ == "__main__":
     # Set the output file name and export the data
     train_dataset = upload_file(args.input_train_file)
     test_dataset = upload_file(args.input_test_file)
-
-    # Get rid of the index column
-    # train_dataset.drop(columns=['Unnamed: 0'], inplace=True)
-    # test_dataset.drop(columns=['Unnamed: 0'], inplace=True)
+    
+    # make Unnamed:0 the index again
+    train_dataset.set_index('Unnamed: 0', inplace=True)
+    test_dataset.set_index('Unnamed: 0', inplace=True)
 
     columns = train_dataset.columns.tolist()
     quarters = ['_2024Q2','_2024Q3','_2024Q4','_2025Q1']
@@ -248,5 +248,5 @@ if __name__ == "__main__":
     print(train_dataset.shape)
 
     # Save the data to a CSV file
-    save_to_csv(train_dataset, args.output_train_file)
-    save_to_csv(test_dataset, args.output_test_file)
+    save_to_csv(train_dataset, args.output_train_file, index=True)
+    save_to_csv(test_dataset, args.output_test_file, index=True)

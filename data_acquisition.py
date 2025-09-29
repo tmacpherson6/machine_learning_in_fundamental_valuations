@@ -299,11 +299,11 @@ def fetch_last_completed_quarters(orig_ticker, retries=6, pause=1.0):
 
     return {"OriginalTicker": orig_ticker, "YahooSymbol": ytk}
 
-def save_to_csv(df, output_file):
+def save_to_csv(df, output_file, index = False):
     """
     Save the DataFrame to a CSV file.
     """
-    df.to_csv(output_file, index=False)
+    df.to_csv(output_file, index=index)
     
 
 if __name__ == "__main__":
