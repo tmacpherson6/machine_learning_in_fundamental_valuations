@@ -226,7 +226,7 @@ if __name__ == "__main__":
 
     # Get rid of the index column
     train_dataset.drop(columns=['Unnamed: 0'], inplace=True)
-    test_dataset.drop(columns=['Unnamed: 0'], inplace=True
+    test_dataset.drop(columns=['Unnamed: 0'], inplace=True)
 
     columns = train_dataset.columns.tolist()
     quarters = ['_2024Q2','_2024Q3','_2024Q4','_2025Q1']
