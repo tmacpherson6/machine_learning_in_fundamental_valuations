@@ -27,12 +27,12 @@ def string_to_float(input_Series: pd.Series) -> pd.Series:
     return input_Series.apply(str.replace, args=(',', '')).astype(np.float64)
 
 
-def log_transform(input_df: pd.DataFrame, columns: list) -> pd.DataFrame:
-    """Applies a log transformation to selected base variables in the data."""
-    dataset = input_df.copy()
-    for column in columns:
-        dataset['log_' + column] = dataset[column].apply(np.log)
-    return dataset
+def log_transform(column: pd.Series) -> pd.Series:
+    """Applies a log transformation to a pandas Series.
+    
+    Adds 2 to the base value so that minimum value for the result is 1.
+    """
+    return (column + 2).apply(np.log2).copy()
 
 
 def plot_residuals(X, y):
