@@ -1,4 +1,6 @@
 """This module contains helper functions for the Milestone II Project."""
+import pickle
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

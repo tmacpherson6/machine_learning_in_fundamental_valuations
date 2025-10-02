@@ -1,4 +1,4 @@
-"""Create Key Performance Indicators (KPI) from company financial data.
+"""This module creates Key Performance Indicators (KPI) from company financial data.
 
 Command Line usage (example for Linux):
  python make_KPIs.py <in_file.csv> <out_file.csv>
