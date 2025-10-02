@@ -26,7 +26,7 @@ We extracted key financial data from yfinance:
 - Asset Class: Used to filter out Equities  
 - CashAndSTInvestments_XXXXX - Cash And Short Term Investments for YEAR and QUARTER
 - CashFromOps_XXXXX - Cash From Operations or Operating Cash Flow for YEAR and QUARTER
-- EPS_XXXXX - TARGET VARIABLE - Net Income and Preferred Dividends/Weighted average shares outstanding for YEAR and QUARTER.
+- EPS_XXXXX - Net Income and Preferred Dividends/Weighted average shares outstanding for YEAR and QUARTER.
 - Exchange - Exchange the security is traded on  
 - Location - Country of Buisness HeadQuarters  
 - LongTermDebt_XXXXXX - Long Term Debt for YEAR and QUARTER  
