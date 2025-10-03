@@ -23,15 +23,20 @@ X_TEST_FILLED_KPIS  := $(SPLIT_DIR)/X_test_filled_KPIs.csv
 X_TRAIN_FILLED_KPIS_QOQ := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ.csv
 X_TEST_FILLED_KPIS_QOQ  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ.csv
 
+# New PCA outputs from QoQ features
+X_TRAIN_FILLED_KPIS_QOQ_PCA := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ_PCA.csv
+X_TEST_FILLED_KPIS_QOQ_PCA  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ_PCA.csv
+
 # Stamp files for tracking
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
 QOQ_STAMP   := $(SPLIT_DIR)/.kpis_qoq.stamp
 
-.PHONY: all venv macro cleaned split clean-split clean-qoq
+.PHONY: all venv macro cleaned split clean-split clean-qoq pca clean-pca
 all: $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) \
      $(X_TRAIN_FILLED) $(X_TEST_FILLED) \
      $(X_TRAIN_FILLED_KPIS) $(X_TEST_FILLED_KPIS) \
-     $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ)
+     $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ) \
+     $(X_TRAIN_FILLED_KPIS_QOQ_PCA) $(X_TEST_FILLED_KPIS_QOQ_PCA)
 
 macro:  $(SPLIT_DIR)/Russell_3000_With_Macro.csv
 cleaned: $(SPLIT_DIR)/Russell_3000_Cleaned.csv
@@ -95,6 +100,18 @@ $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ): $(QOQ_STAMP)
 
 clean-qoq:
 	rm -f $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ) $(QOQ_STAMP)
+
+# PCA from QoQ features using extract_files module
+pca: $(X_TRAIN_FILLED_KPIS_QOQ_PCA) $(X_TEST_FILLED_KPIS_QOQ_PCA)
+
+$(X_TRAIN_FILLED_KPIS_QOQ_PCA): $(X_TRAIN_FILLED_KPIS_QOQ) | datasets $(VENV)/.deps
+	"$(PYTHON)" -m extract_files "$<" "$@"
+
+$(X_TEST_FILLED_KPIS_QOQ_PCA): $(X_TEST_FILLED_KPIS_QOQ) | datasets $(VENV)/.deps
+	"$(PYTHON)" -m extract_files "$<" "$@"
+
+clean-pca:
+	rm -f $(X_TRAIN_FILLED_KPIS_QOQ_PCA) $(X_TEST_FILLED_KPIS_QOQ_PCA)
 
 # Ensure datasets/ exists
 datasets:
