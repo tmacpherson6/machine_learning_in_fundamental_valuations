@@ -11,7 +11,7 @@ from helpers import *
 from unsupervised_helpers import *
 
 
-def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataFrame:
+def extract_features(input_df: pd.DataFrame, pickle_path='pickles') -> pd.DataFrame:
     """Extract features from a training dataset using PCA.
 
     Use this function only on the TRAINING set.
@@ -25,7 +25,6 @@ def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataF
     # Process for PCA
     pca_df = process_for_PCA(dataset)
     # We found that the top 50 PCs explain 85% of the variance
-    print('Applying PCA to the entire dataset, extracting top 50 PCs...')
     pca = PCA(50)
     X_PCA = pca.fit_transform(pca_df)
     # Pickle the pca object
@@ -34,15 +33,7 @@ def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataF
     # Make a dataframe of the top 50 PCs
     PCA_cols = ['PCA_all_PC' + str(i + 1) for i in range(X_PCA.shape[1])]
     top50_PC_all_df = pd.DataFrame(X_PCA, columns=PCA_cols)
-    # Use K-Means to assign cluster labels
-    print('Performing K-Means clustering, saving cluster assignments...')
-    kmeans = KMeans(n_clusters=7, init='random', n_init=100, copy_x=False)
-    cluster_label = kmeans.fit_predict(X_PCA)
-    # Pickle the K-Means object
-    with open(pickle_path + 'kmeans.pickle', 'wb') as f:
-        pickle.dump(kmeans, f)
     # Perform PCA using only the KPI subset
-    print('Applying PCA to KPIs only, extracting top 10 PCs...')
     subset_df = get_KPI(dataset)
     subset_pca_df = process_for_PCA(subset_df)
     pca_KPI = PCA(10)
@@ -53,21 +44,21 @@ def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataF
     # Make a dataframe of the top 10 PCs from the KPI subset
     PCA_KPI_cols = ['PCA_KPI_PC' + str(i + 1) for i in range(X_PCA_KPI.shape[1])]
     top10_PC_KPI_df = pd.DataFrame(X_PCA_KPI, columns=PCA_KPI_cols)
+    # Use K-Means to assign cluster labels
+    kmeans = KMeans(n_clusters=7, init='random', n_init=100, copy_x=False)
+    cluster = kmeans.fit_predict(X_PCA_KPI)
+    # Pickle the K-Means object
+    with open(pickle_path + 'kmeans.pickle', 'wb') as f:
+        pickle.dump(kmeans, f)
     # Create augmented DataFrame
     augmented_df = pd.concat(
         (
             dataset,
             top50_PC_all_df,
             top10_PC_KPI_df,
-            pd.Series(cluster_label, name='Cluster')
+            pd.Series(cluster, name='Cluster')
         ), axis = 1
     )
-    print('Added the following features using PCA and K-Means:')
-    for column in top50_PC_all_df:
-        print(column)
-    for column in top10_PC_KPI_df:
-        print(column)
-    print('Cluster')
     return augmented_df
     
 
