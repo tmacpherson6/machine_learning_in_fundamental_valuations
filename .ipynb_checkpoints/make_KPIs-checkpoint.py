@@ -114,5 +114,5 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     KPI_df = make_KPIs(df)
-    KPI_df.to_csv(args.output_file, index=False)
+    KPI_df.to_csv(args.output_file)
     print(f"KPI file saved to {args.output_file}")

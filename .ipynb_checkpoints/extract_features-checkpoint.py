@@ -11,7 +11,7 @@ from helpers import *
 from unsupervised_helpers import *
 
 
-def extract_features(input_df: pd.DataFrame, pickle_path='pickles') -> pd.DataFrame:
+def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataFrame:
     """Extract features from a training dataset using PCA.
 
     Use this function only on the TRAINING set.
@@ -75,5 +75,5 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     augmented_df = extract_features(df)
-    augmented_df.to_csv(args.output_file, index=False)
+    augmented_df.to_csv(args.output_file)
     print(f"Augmented DataFrame saved to {args.output_file}")

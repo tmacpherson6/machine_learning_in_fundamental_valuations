@@ -148,5 +148,5 @@ if __name__ == '__main__':
     cleaned_df = clean(df)
     cleaned_df = market_cap_categories(cleaned_df)
     print('Added Market Cap Categories to DataFrame')
-    cleaned_df.to_csv(args.output_file, index=False)
+    cleaned_df.to_csv(args.output_file)
     print(f'\nCleaned file saved to {args.output_file}')
