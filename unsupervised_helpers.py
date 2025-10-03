@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 # Sci-kit Learn Functions
-from sklearn.preprocessing import StandardScaler, RobustScaler, QuantileTransformer
+from sklearn.preprocessing import StandardScaler, RobustScaler, QuantileTransformer, MinMaxScaler
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.manifold import MDS, TSNE
 
 
@@ -101,7 +101,7 @@ def process_for_PCA(input_df: pd.DataFrame,
     if scaler == 'robust':
         scaler = RobustScaler()
     elif scaler == 'quantile':
-        scaler = QuantileTransformer(output_distribution='normal')
+        scaler = QuantileTransformer()
     else:
         scaler = StandardScaler()
     return pd.DataFrame(scaler.fit_transform(dataset))
