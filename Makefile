@@ -23,11 +23,12 @@ X_TEST_FILLED_KPIS  := $(SPLIT_DIR)/X_test_filled_KPIs.csv
 X_TRAIN_FILLED_KPIS_QOQ := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ.csv
 X_TEST_FILLED_KPIS_QOQ  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ.csv
 
-# New PCA outputs from QoQ features
+# PCA outputs from QoQ features (via extract_features.py)
 X_TRAIN_FILLED_KPIS_QOQ_PCA := $(SPLIT_DIR)/X_train_filled_KPIs_QoQ_PCA.csv
 X_TEST_FILLED_KPIS_QOQ_PCA  := $(SPLIT_DIR)/X_test_filled_KPIs_QoQ_PCA.csv
+EXTRACT := extract_features.py
 
-# Stamp files for tracking
+# Stamp files
 SPLIT_STAMP := $(SPLIT_DIR)/.train_test$(TARGET_TAG).split
 QOQ_STAMP   := $(SPLIT_DIR)/.kpis_qoq.stamp
 
@@ -42,7 +43,7 @@ macro:  $(SPLIT_DIR)/Russell_3000_With_Macro.csv
 cleaned: $(SPLIT_DIR)/Russell_3000_Cleaned.csv
 split:   $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST)
 
-# Create virtual environment and install dependencies
+# Virtual env
 venv: $(PYTHON)
 $(PYTHON):
 	python3 -m venv $(VENV)
@@ -50,23 +51,21 @@ $(PYTHON):
 	"$(PIP)" install -U pip
 
 $(VENV)/.deps: requirements.txt | $(PYTHON)
-	"$(PYTHON)" -m pip install -U pip
-	"$(PYTHON)" -m pip install -r requirements.txt
+	"$(PIP)" install -U pip
+	"$(PIP)" install -r requirements.txt
 	touch $@
 
-# Generate the dataset with fundamentals from the Base Stock Dataset
+# Build datasets
 $(SPLIT_DIR)/Russell_3000_Fundamentals.csv: $(SPLIT_DIR)/Russell_3000.csv data_acquisition.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition.py $< $@
 
-# Add Macroeconomic data to the dataset
 $(SPLIT_DIR)/Russell_3000_With_Macro.csv: $(SPLIT_DIR)/Russell_3000_Fundamentals.csv data_acquisition_macro.py | datasets $(VENV)/.deps
 	"$(PYTHON)" data_acquisition_macro.py $< $@
 
-# Clean the generated dataset
 $(SPLIT_DIR)/Russell_3000_Cleaned.csv: $(SPLIT_DIR)/Russell_3000_With_Macro.csv clean.py | datasets $(VENV)/.deps
 	"$(PYTHON)" clean.py $< $@
 
-# Train/Test split via stamp (tag-sensitive) to avoid unnecessary re-splitting
+# Train/Test split via stamp
 $(SPLIT_STAMP): $(SPLIT_DIR)/Russell_3000_Cleaned.csv $(SPLIT_SCRIPT) | datasets $(VENV)/.deps
 	cd $(SPLIT_DIR) && "$(PYTHON)" "../$(SPLIT_SCRIPT)" "Russell_3000_Cleaned.csv" "$(TARGET_TAG)"
 	touch $@
@@ -76,7 +75,7 @@ $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST): $(SPLIT_STAMP)
 clean-split:
 	rm -f $(X_TRAIN) $(Y_TRAIN) $(X_TEST) $(Y_TEST) $(SPLIT_DIR)/.train_test*.split
 
-# Fill missing values for X_train and X_test
+# Fill missing values
 $(SPLIT_DIR)/X_train_filled.csv $(SPLIT_DIR)/X_test_filled.csv: \
         $(SPLIT_DIR)/X_train.csv $(SPLIT_DIR)/X_test.csv X_train_X_test_filled.py | datasets $(VENV)/.deps
 	"$(PYTHON)" X_train_X_test_filled.py "$(SPLIT_DIR)/X_train.csv" "$(SPLIT_DIR)/X_test.csv" \
@@ -101,14 +100,14 @@ $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ): $(QOQ_STAMP)
 clean-qoq:
 	rm -f $(X_TRAIN_FILLED_KPIS_QOQ) $(X_TEST_FILLED_KPIS_QOQ) $(QOQ_STAMP)
 
-# PCA from QoQ features using extract_files module
+# PCA from QoQ features via script
 pca: $(X_TRAIN_FILLED_KPIS_QOQ_PCA) $(X_TEST_FILLED_KPIS_QOQ_PCA)
 
-$(X_TRAIN_FILLED_KPIS_QOQ_PCA): $(X_TRAIN_FILLED_KPIS_QOQ) | datasets $(VENV)/.deps
-	"$(PYTHON)" -m extract_files "$<" "$@"
+$(X_TRAIN_FILLED_KPIS_QOQ_PCA): $(X_TRAIN_FILLED_KPIS_QOQ) $(EXTRACT) | datasets $(VENV)/.deps
+	"$(PYTHON)" $(EXTRACT) "$<" "$@"
 
-$(X_TEST_FILLED_KPIS_QOQ_PCA): $(X_TEST_FILLED_KPIS_QOQ) | datasets $(VENV)/.deps
-	"$(PYTHON)" -m extract_files "$<" "$@"
+$(X_TEST_FILLED_KPIS_QOQ_PCA): $(X_TEST_FILLED_KPIS_QOQ) $(EXTRACT) | datasets $(VENV)/.deps
+	"$(PYTHON)" $(EXTRACT) "$<" "$@"
 
 clean-pca:
 	rm -f $(X_TRAIN_FILLED_KPIS_QOQ_PCA) $(X_TEST_FILLED_KPIS_QOQ_PCA)
