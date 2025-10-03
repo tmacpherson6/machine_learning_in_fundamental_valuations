@@ -36,6 +36,7 @@ def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
         dataset[KPI + quarter] = (
             dataset['NetIncome' + quarter] / dataset['Revenue' + quarter]
         )
+    """
     # Working Capital = Current Assets - Current Liabilities
     KPI = 'KPI_WorkingCapital'
     for quarter in quarters:
@@ -43,6 +44,7 @@ def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
             dataset['CurrentAssets' + quarter]
             - dataset['CurrentLiabilities' + quarter]
         )
+    """
     # Current Ratio = Current Assets / Current Liabilities
     KPI = 'KPI_CurrentRatio'
     for quarter in quarters:
@@ -93,10 +95,12 @@ def make_KPIs(input_df: pd.DataFrame) -> pd.DataFrame:
                 + dataset['TotalAssets' + quarters[end]]
             ) / 2)
         )
+    """
     # Cash Flow = Cash From Operations
     KPI = 'KPI_CashFlow'
     for quarter in quarters:
         dataset[KPI + quarter] = dataset['CashFromOps' + quarter]
+    """
     # Return final dataframe
     return dataset
 
