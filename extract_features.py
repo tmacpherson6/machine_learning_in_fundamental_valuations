@@ -21,7 +21,7 @@ def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataF
     """
     dataset = input_df.copy()
     if 'Unnamed: 0' in dataset.columns:
-        dataset.set_index('Unnamed: 0', inplace=True)
+        dataset.drop(columns=['Unnamed: 0'], inplace=True)
     # Process for PCA
     pca_df = process_for_PCA(dataset)
     # We found that the top 50 PCs explain 85% of the variance
@@ -75,5 +75,5 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     augmented_df = extract_features(df)
-    augmented_df.to_csv(args.output_file, index=True)
+    augmented_df.to_csv(args.output_file, index=False)
     print(f"Augmented DataFrame saved to {args.output_file}")
