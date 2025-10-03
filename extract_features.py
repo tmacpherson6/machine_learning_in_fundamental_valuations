@@ -21,7 +21,7 @@ def extract_features(input_df: pd.DataFrame, pickle_path='pickles/') -> pd.DataF
     """
     dataset = input_df.copy()
     if 'Unnamed: 0' in dataset.columns:
-        dataset.drop(columns=['Unnamed: 0'], inplace=True)
+        dataset.set_index('Unnamed: 0', inplace=True)
     # Process for PCA
     pca_df = process_for_PCA(dataset)
     # We found that the top 50 PCs explain 85% of the variance
