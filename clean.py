@@ -1,4 +1,7 @@
-"""Clean company financial and macro data.
+"""
+Pipeline File 3
+
+Clean company financial and macro data.
 
 Command Line usage (example for Linux):
  python clean.py <in_file.csv> <out_file.csv>
@@ -148,5 +151,7 @@ if __name__ == '__main__':
     cleaned_df = clean(df)
     cleaned_df = market_cap_categories(cleaned_df)
     print('Added Market Cap Categories to DataFrame')
+    cleaned_df.set_index('Ticker',inplace=True)
+    print(cleaned_df.head())
     cleaned_df.to_csv(args.output_file)
     print(f'\nCleaned file saved to {args.output_file}')
