@@ -1,4 +1,7 @@
-"""This module creates Key Performance Indicators (KPI) from company financial data.
+"""
+Pipeline File 6 
+
+This module creates Key Performance Indicators (KPI) from company financial data.
 
 Command Line usage (example for Linux):
  python make_KPIs.py <in_file.csv> <out_file.csv>
@@ -118,5 +121,7 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     KPI_df = make_KPIs(df)
-    KPI_df.to_csv(args.output_file)
+    KPI_df.set_index('Ticker',inplace=True)
+    #print(KPI_df.head())
+    KPI_df.to_csv(args.output_file, index=True)
     print(f"KPI file saved to {args.output_file}")
