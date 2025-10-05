@@ -11,6 +11,7 @@ import argparse
 import pandas as pd
 from typing import List, Tuple
 from sklearn.model_selection import train_test_split
+from data_acquisition import save_to_csv
 
 
 def get_X_y_columns(dataset: pd.DataFrame, target_string: str) -> Tuple[List[str],List[str]]:
@@ -72,8 +73,9 @@ if __name__ == '__main__':
     X_tr, X_te, y_tr, y_te = split_data(dataset, X_columns, y_columns, strat)
     
     # Save the data
-    X_tr.to_csv("X_train.csv", index=True) 
-    y_tr.to_csv("y_train.csv", index=True)
-    X_te.to_csv("X_test.csv",  index=True) 
-    y_te.to_csv("y_test.csv",  index=True)
+    save_to_csv(X_tr, "X_train.csv")
+    save_to_csv(y_tr, "y_train.csv")
+    save_to_csv(X_te, "X_test.csv")
+    save_to_csv(y_te, "y_test.csv")
+
     print("Saved Training and Testing Data Files")
