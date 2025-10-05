@@ -224,10 +224,6 @@ if __name__ == "__main__":
     train_dataset = upload_file(args.input_train_file)
     test_dataset = upload_file(args.input_test_file)
     
-    # make Unnamed:0 the index again
-    train_dataset.set_index('Unnamed: 0', inplace=True)
-    test_dataset.set_index('Unnamed: 0', inplace=True)
-
     columns = train_dataset.columns.tolist()
     quarters = ['_2024Q2','_2024Q3','_2024Q4','_2025Q1']
     unique_columns = get_unique_columns(columns)
@@ -245,8 +241,11 @@ if __name__ == "__main__":
     train_dataset = train_dataset.apply(lambda r: get_rate_data(r, unique_columns, quarters), axis=1)
     test_dataset = test_dataset.apply(lambda r: get_rate_data(r, QoQ_columns, QoQ_quarters), axis=1)
     test_dataset = test_dataset.apply(lambda r: get_rate_data(r, unique_columns, quarters), axis=1)
-    print(train_dataset.shape)
-
+    
+    train_dataset.set_index('Ticker',inplace=True)
+    test_dataset.set_index('Ticker',inplace=True)
+    
     # Save the data to a CSV file
     save_to_csv(train_dataset, args.output_train_file, index=True)
     save_to_csv(test_dataset, args.output_test_file, index=True)
+    print("Calculated QoQ ratios and exported CSV files")
