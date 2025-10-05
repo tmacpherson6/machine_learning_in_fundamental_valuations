@@ -1,4 +1,7 @@
-"""This module contains helper functions for the unsupervised learning section."""
+"""
+Pipeline File Support
+
+This module contains helper functions for the unsupervised learning section."""
 from helpers import get_quarters
 
 import numpy as np
