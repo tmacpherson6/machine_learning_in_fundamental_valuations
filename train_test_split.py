@@ -73,9 +73,9 @@ if __name__ == '__main__':
     X_tr, X_te, y_tr, y_te = split_data(dataset, X_columns, y_columns, strat)
     
     # Save the data
-    save_to_csv(X_tr, "datasets/X_train.csv")
-    save_to_csv(y_tr, "datasets/y_train.csv")
-    save_to_csv(X_te, "datasets/X_test.csv")
-    save_to_csv(y_te, "datasets/y_test.csv")
+    save_to_csv(X_tr, "X_train.csv")
+    save_to_csv(y_tr, "y_train.csv")
+    save_to_csv(X_te, "X_test.csv")
+    save_to_csv(y_te, "y_test.csv")
 
     print("Saved Training and Testing Data Files")
