@@ -1,4 +1,6 @@
 '''
+Pipeline File 1
+
 This is going to be the first file in the pipeline for our dataset creation and preparation for the machine learning model.
 
 It will load the Russell 3000 data and update with additional financial data.
@@ -99,6 +101,8 @@ def _last_completed_quarter(as_of=None):
     """
     if as_of is None:
         as_of = pd.Timestamp.today()
+    else:
+        as_of = pd.to_datetime(as_of)
     y = as_of.year
     q = (as_of.month - 1)//3 + 1
     # current quarter is in-progress -> use previous quarter
@@ -299,7 +303,7 @@ def fetch_last_completed_quarters(orig_ticker, retries=6, pause=1.0):
 
     return {"OriginalTicker": orig_ticker, "YahooSymbol": ytk}
 
-def save_to_csv(df, output_file, index = False):
+def save_to_csv(df, output_file, index = True):
     """
     Save the DataFrame to a CSV file.
     """
@@ -425,7 +429,7 @@ if __name__ == "__main__":
     ]
 
     # Build allowed quarter labels (exclude current quarter)
-    ORDERED_QUARTERS = _last_n_completed_quarters(n=5)  # e.g., ['2025Q2','2025Q1','2024Q4','2024Q3','2024Q2']
+    ORDERED_QUARTERS = _last_n_completed_quarters(n=5,as_of = '09-03-2025')  # e.g., ['2025Q2','2025Q1','2024Q4','2024Q3','2024Q2']
     ALLOWED_QUARTERS = set(ORDERED_QUARTERS)
 
     orig_tickers = build_ticker_mapping(df)
@@ -444,6 +448,8 @@ if __name__ == "__main__":
     merged_df = merged_df[id_cols + sorted(metric_cols)]
     
     print("Target quarters (most recent first):", ORDERED_QUARTERS)
+    merged_df.set_index('Ticker',inplace=True)
+    #print(merged_df.isna().sum())
     print(merged_df.head())
 
     save_to_csv(merged_df, args.output_file)
