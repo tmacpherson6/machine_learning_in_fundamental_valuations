@@ -1,4 +1,6 @@
 '''
+Pipeline File 4
+
 This part of our pipeline is going to separate the data into a training and a
 testing set. We want to do this early, before all imputation and transformations so that there is no risk of data leakage.
 
@@ -60,6 +62,8 @@ if __name__ == '__main__':
     
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
+    df.set_index('Ticker',inplace=True)
+
     # Identify the columns
     X_columns, y_columns = get_X_y_columns(df, args.target_string)
     # Get the dataset and startification series
