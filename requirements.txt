@@ -36,3 +36,4 @@ fredapi
 matplotlib
 seaborn
 altair
+statsmodels
