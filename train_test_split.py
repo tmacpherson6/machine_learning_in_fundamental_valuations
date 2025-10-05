@@ -26,6 +26,8 @@ def get_X_y_columns(dataset: pd.DataFrame, target_string: str) -> Tuple[List[str
             y_columns.append(column)
         else:
             X_columns.append(column)
+    #y_cols.append('Ticker')
+    
     return X_columns, y_columns
 
 
@@ -45,10 +47,12 @@ def split_data(dataset: pd.DataFrame, X_columns: List[str], y_columns: List[str]
     '''
     Split the data into training and testing sets using stratified sampling.
     '''
-    X = dataset[X_columns]
-    y = dataset[y_columns]
-
-    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size = test_size, random_state = random_state, stratify = strat)
+    idx_tr, idx_te = train_test_split(dataset.index, test_size = test_size, random_state = random_state, stratify = strat)
+    
+    X_tr = dataset.loc[idx_tr,X_columns]
+    y_tr = dataset.loc[idx_tr,y_columns]
+    X_te = dataset.loc[idx_te,X_columns]
+    y_te = dataset.loc[idx_te,y_columns]
     
     return X_tr,X_te,y_tr,y_te
 
@@ -67,15 +71,18 @@ if __name__ == '__main__':
 
     # Identify the columns
     X_columns, y_columns = get_X_y_columns(df, args.target_string)
+
     # Get the dataset and startification series
     dataset, strat = create_strata(df)
+    
     # Split the data
     X_tr, X_te, y_tr, y_te = split_data(dataset, X_columns, y_columns, strat)
+    #print(y_tr.head())
     
     # Save the data
-    save_to_csv(X_tr, "X_train.csv")
-    save_to_csv(y_tr, "y_train.csv")
-    save_to_csv(X_te, "X_test.csv")
-    save_to_csv(y_te, "y_test.csv")
+    save_to_csv(X_tr, "X_train.csv", index=True)
+    save_to_csv(y_tr, "y_train.csv", index=True)
+    save_to_csv(X_te, "X_test.csv", index=True)
+    save_to_csv(y_te, "y_test.csv", index=True)
 
     print("Saved Training and Testing Data Files")
