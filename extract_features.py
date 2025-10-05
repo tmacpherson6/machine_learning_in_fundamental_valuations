@@ -1,10 +1,16 @@
-"""Augments a dataframe with PCA-extracted features and K-Means cluster labels.
+"""
+Pipeline File 8 
+
+Augments a dataframe with PCA-extracted features and K-Means cluster labels.
 
 This module is intended to augment the X_train and X_test dataframes with additional 
 features derived from PCA extraction and K-Means clustering techniques.
 
 Additionally, it preserves all objects as python 'pickle' files so that results can be replicated in the future.
 """
+import os
+os.environ.setdefault("OMP_NUM_THREADS", "8")
+
 import argparse
 
 from helpers import *
@@ -75,5 +81,7 @@ if __name__ == '__main__':
     # Load input file, clean dataframe, and write output file
     df = pd.read_csv(args.input_file)
     augmented_df = extract_features(df)
-    augmented_df.to_csv(args.output_file)
+    augmented_df.set_index('Ticker',inplace=True)
+    
+    augmented_df.to_csv(args.output_file,index=True)
     print(f"Augmented DataFrame saved to {args.output_file}")

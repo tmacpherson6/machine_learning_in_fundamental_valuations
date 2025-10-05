@@ -1,4 +1,6 @@
 '''
+Pipeline File 7
+
 This python script is used to perform feature engineering on a dataset containing financial and macroeconomic data. The script reads in training and testing datasets, processes the data to create new features based on quarter-over-quarter (QoQ) changes and raw values, and handles missing data. Finally, it saves the processed datasets to CSV files for further analysis or modeling.
 '''
 
