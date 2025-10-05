@@ -1,4 +1,6 @@
 '''
+Pipeline File 2 
+
 Get Macroeconomic data from the St. Louis Fed (FRED API). Then merge macroeconomic data to the dataset.
 '''
 
@@ -46,8 +48,6 @@ def merge_macro_data(df: pd.DataFrame, macro_data: pd.DataFrame) -> pd.DataFrame
         df[col] = macro_data.iloc[0][col]
     return df
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file', help = 'Title of input file: Russell_3000.csv')
@@ -65,8 +65,9 @@ if __name__ == "__main__":
     # Merge the macroeconomic data with the existing DataFrame
     df = merge_macro_data(df, macro_data)
     print('Merged DataFrame with Macroeconomic Data')
+    df.set_index('Ticker', inplace=True)
+    print(df.iloc[:,:3].head())
 
     # Save the updated DataFrame to a new CSV file
     save_to_csv(df, args.output_file)
     print(f"Data with Macroeconomic Data saved to {args.output_file}")
-
