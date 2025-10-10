@@ -37,3 +37,4 @@ matplotlib
 seaborn
 altair
 statsmodels
+shap
