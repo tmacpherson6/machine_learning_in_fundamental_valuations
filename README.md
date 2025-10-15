@@ -90,13 +90,13 @@ Python Files For Pipeline
 - Adding temporal relationships by incorporating Quarter-over-Quarter (QoQ) changes and rates of change
 
 `extract_features.py`
-- Use unsupervised learning (Principal Component Analysis) to create uncorrelated orthogonal financial features.
+- Use Principal Component Analysis (PCA) to create uncorrelated orthogonal financial features.
 
 `helpers.py`
 - Additional helper functions for cleaning and feature engineering
 
 `unsupervised_helpers.py`
-- Helper functions for principal component analysis (PCA)
+- Helper functions for PCA, Multi-Dimensional Scaling (MDS), K-Means clustering, and Hierarchical Clustering
 
 ==================================== 
 Dataset Checkpoint CSV files
@@ -166,41 +166,50 @@ Thomas' Notebooks
 
 Pete's Noetbooks
 ----------------
-`clean.ipynb`
--
+`exploration/1 - Supplemental_Data_Exploration.ipynb`
+- Conducts initial dataset exploration, focused on important categorical variables (Market Cap, Sector, Exchange).
 
-`Initial_Analysis_09-18.ipynb`
-- 
+`exploration/2 - Log_Transform.ipynb`
+- Explores the log-normal distribution of most base financial statement variables.
 
-`K-Means_log-transform.ipynb`
--
+`exploration/3 - KPI_Exploration.ipynb`
+- Explores different transformations (via Quantile Transformer, etc.) on the KPIs and visualizes their distributions using boxplots.
 
-`K-Means_quantile-scaler.ipynb`
--
+`exploration/4 - KPI_Exploration II.ipynb`
+- Explores the predictive power of KPIs and uses QQ-plots to compare their distributions to a Gaussian.
 
-`K-Means.ipynb`
--
+`pipeline/1 - clean.ipynb`
+*Notebook converted to data pipeline module 'clean.py'*
+- Basic data cleaning and transformation:
+  - Sets 'Ticker' as the primary key (index)
+  - Drops unnecessary columns
+  - Converts 'Market Value' from string to integer
+  - Filters by 'Stock Exchange' (keeping only NYSE and NASDAQ) and 'Asset Class' (keeping only Equity)
+  - Sets one-hot encoding for 'Location'
 
-`Log_transform.ipynb`
--
+`pipeline/2 - make_KPIs.ipynb`
+*Notebook converted to data pipeline module 'make_KPIs.py'*
+- Calculates the key performance indicators (KPIs), which financial analysts use to asses company performance, and adds to the dataset as new features.
 
-`make_KPIs.ipynb`
--
+`pipeline/3 - extract_PCA.ipynb`
+*Notebook converted to data pipeline module 'extract_features.py'*
+- Extracts features using PCA:
+  - Top 50 Principal Components from complete dataset
+  - Top 10 Principal Components from KPIs only
+  - Cluster labels from K-Means clustering analysis
 
-`PCA_log-transform.ipynb`
--
+`unsupervised/1 - PCA.ipynb`
+- Uses Principal Component Analysis (PCA) to visualize the data in lower dimensions and to extract features for use in training supervised machine learning models.
 
-`PCA_pipeline.ipynb`
--
+`unsupervised/2 - K-Means.ipynb`
+- Uses the PCA-transformed data to estimate a number of clusters using the K-Means method.  Intention was to use cluster labels to help predict the target variable.  Visualizes results using Multi-Dimensional Scaling (MDS).
 
-`PCA_quantile-scaler.ipynb`
--
-
-`PCA.ipynb`
--
-
-1Supplemental_Data_Exploration.ipynb`
-- 
+`unsupervised/3 - Hierarchical-Clustering_Base.ipynb`
+- Uses agglomerative clustering to look for clusters in various subsets of the data, including:
+  - base financial statement data
+  - rates of change: quarter-over-quarter (QoQ), annual, etc.
+  - key performance indicators (KPIs)
+- Plots results using MDS
 
 Melody's Notebooks
 ------------------
