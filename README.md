@@ -5,7 +5,7 @@ Clustering Performance and Forecasting Revenue with Financial and Macroeconomic 
 Project Title
 --------------
 Clustering Performance and Forecasting Revenue with Financial and Macroeconomic Data
-(See: `Team10_MilestoneII_Proposal.pdf` For a more comprehensive project outline)
+(See: [Team10_MilestoneII_Proposal.pdf](https://github.com/tmacpherson6/machine_learning_in_fundamental_valuations/blob/main/Team10_MilestoneII_Proposal.pdf) for a more comprehensive project outline)
 
 Project Overview
 ----------------
