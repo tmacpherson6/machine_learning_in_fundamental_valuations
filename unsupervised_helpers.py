@@ -44,7 +44,7 @@ def get_Macro(input_df: pd.DataFrame) -> pd.DataFrame:
     macro_vars=['GDP_',
                 'GDPReal_',
                 'Unemployment',
-                'Ineterest',
+                'InterestRate',
                 'Industrial',
                 'Inflation'
                ]
@@ -103,10 +103,10 @@ def process_for_PCA(input_df: pd.DataFrame,
         print(f'There are {dataset.shape[0]} rows and {dataset.shape[1]} columns in the dataset.')
     if scaler == 'robust':
         scaler = RobustScaler()
-    elif scaler == 'quantile':
-        scaler = QuantileTransformer()
-    else:
+    elif scaler == 'standard':
         scaler = StandardScaler()
+    else:
+        scaler = QuantileTransformer()
     return pd.DataFrame(scaler.fit_transform(dataset))
 
 

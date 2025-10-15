@@ -50,7 +50,9 @@ def plot_residuals(X, y):
     # Plot residual distribution vs. the covariate
     fig = plt.figure()
     ax = fig.subplots()
-    ax.scatter(X, results.resid)
+    ax.scatter(results.resid, X, alpha=0.5)
+    ax.set_xlabel(f'{y.columns[0]} (observed)')
+    ax.set_ylabel(f'Residuals of {X.name}')
     plt.title('Residuals of ' + X.name)
     plt.show()
     # Show a QQ-plot for residuals

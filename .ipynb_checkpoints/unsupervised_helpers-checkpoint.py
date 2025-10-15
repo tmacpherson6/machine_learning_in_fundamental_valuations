@@ -1,4 +1,7 @@
-"""This module contains helper functions for the unsupervised learning section."""
+"""
+Pipeline File Support
+
+This module contains helper functions for the unsupervised learning section."""
 from helpers import get_quarters
 
 import numpy as np
@@ -7,9 +10,9 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 # Sci-kit Learn Functions
-from sklearn.preprocessing import StandardScaler, RobustScaler, QuantileTransformer
+from sklearn.preprocessing import StandardScaler, RobustScaler, QuantileTransformer, MinMaxScaler
 from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from sklearn.manifold import MDS, TSNE
 
 
@@ -41,7 +44,7 @@ def get_Macro(input_df: pd.DataFrame) -> pd.DataFrame:
     macro_vars=['GDP_',
                 'GDPReal_',
                 'Unemployment',
-                'Ineterest',
+                'InterestRate',
                 'Industrial',
                 'Inflation'
                ]
@@ -100,10 +103,10 @@ def process_for_PCA(input_df: pd.DataFrame,
         print(f'There are {dataset.shape[0]} rows and {dataset.shape[1]} columns in the dataset.')
     if scaler == 'robust':
         scaler = RobustScaler()
-    elif scaler == 'quantile':
-        scaler = QuantileTransformer(output_distribution='normal')
-    else:
+    elif scaler == 'standard':
         scaler = StandardScaler()
+    else:
+        scaler = QuantileTransformer()
     return pd.DataFrame(scaler.fit_transform(dataset))
 
 
