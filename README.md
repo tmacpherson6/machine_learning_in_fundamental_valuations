@@ -16,6 +16,11 @@ This file is contained in the repository as:
 
 We have engineered features that allow for a more accurate prediction of the next quarters Revneue which can be used to value a company and help determine potential mid- to long-term investment opportunities.
 
+Final Report
+------------
+For a comprehensive summary of the full project see the final PDF file contained in the repository.
+(See: `Milestone II Report_Team 10_Fall25.pdf` for a full sumamry of the project)
+
 Raw Data
 ----------------
 We extracted key financial data from yfinance: 
