@@ -205,10 +205,10 @@ Pete's Noetbooks
 Melody's Notebooks
 ------------------
 `Missing_value_fillin.ipynb`
--
+- Notebook focused on handling missing data in the financial dataset. Median values were calculated within the same market capitalization group and sector to ensure realistic imputation and maintain consistency across comparable companies.
 
 `MLP_1008.ipynb`
--
+- Developed a TensorFlow-based MLP regression model with GELU activations, dropout regularization, and Huber loss. Trained using the AdamW optimizer and cosine learning rate schedule, and evaluated with R², MAE, RMSE, and a custom SuccessRate metric.
 
 
 *Additional project documentation will be added as files are created.
