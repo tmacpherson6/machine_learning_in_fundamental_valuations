@@ -19,7 +19,7 @@ We have engineered features that allow for a more accurate prediction of the nex
 Final Report
 ------------
 For a comprehensive summary of the full project see the final PDF file contained in the repository.
-(See: `Milestone II Report_Team 10_Fall25.pdf` for a full sumamry of the project)
+(See: [Milestone II Report_Team 10_Fall25.pdf]() for a full sumamry of the project)
 
 Raw Data
 ----------------
